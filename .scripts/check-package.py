@@ -58,8 +58,11 @@ def validate(root, release=False):
             headers[key.strip()] = value.strip()
         elif line and not line.startswith("#"):
             visit(line)
-    if headers.get("Interface") != "120100":
-        raise ValueError("Portal must target Interface 120100")
+    interfaces = [value.strip() for value in headers.get("Interface", "").split(",")]
+    if "120100" not in interfaces or any(not value.isdecimal() or int(value) <= 0 for value in interfaces):
+        raise ValueError("Interface must contain 120100 and only positive numeric client versions")
+    if len(interfaces) != len(set(interfaces)):
+        raise ValueError("Duplicate Interface version")
     if headers.get("SavedVariables") != "OrbitPortalDB":
         raise ValueError("Portal's standalone store must be declared in SavedVariables")
     for asset in ASSETS:

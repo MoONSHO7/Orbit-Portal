@@ -1,7 +1,7 @@
 # Orbit: Portal
 
 ## Description
-A portal launcher with arc layout, hover reveal, favorites, category navigation and keyboard search. This development preview runs independently or attaches to an installed Orbit host; `Orbit_Portal` embeds LibOrbitUI and has its own `OrbitPortalDB`.
+A portal launcher for Retail with arc layout, hover reveal, favorites, category navigation and keyboard search. This development preview runs independently or attaches to an installed Orbit host; `Orbit_Portal` embeds LibOrbitUI and has its own `OrbitPortalDB`.
 
 ## Purpose
 Prove that the shared movement and settings UI can serve both Orbit and standalone products while retaining Portal's travel behavior. This is the standalone library pilot, not the completed migration/export release.
@@ -20,7 +20,7 @@ Use `/orbitportal` for settings, `/orbitportal move` for native Edit Mode, `/orb
 ## Gotchas
 - This preview deliberately preserves the existing Orbit settings path when integrated. Standalone settings are a separate store. Automatic migration, independent preset management, full external-profile export and the negotiated generic host provider remain pending; disabling Orbit does not yet transfer its profile configuration.
 - The workspace-root `Orbit-Libs/LibOrbitUI/LibOrbitUI-1.0` runtime owns the shared library; consumers link directly to it during development. `Orbit/.scripts/package-orbit-ui.py` verifies the link, generates localization and records content hashes; staged packages contain regular files. Never hand-edit `Localization/Generated.lua`.
-- `.pkgmeta` pins the full commit SHA of [LibOrbitUI release 1.2](https://github.com/MoONSHO7/Orbit-Libs/releases/tag/LibOrbitUI-1.2), which provides API 1.5, and selects `LibOrbitUI/LibOrbitUI-1.0`. `python .scripts/fetch-libs.py` materializes that runtime for clean-checkout validation while preserving development junctions, including with `--force`. GitHub packaging reads the same pin. Portal has no color settings and embeds no ColorPicker dependency.
+- `.pkgmeta` pins the verified full commit SHA of [LibOrbitUI release 1.3](https://github.com/MoONSHO7/Orbit-Libs/releases/tag/LibOrbitUI-1.3), which provides API 1.8, and selects `LibOrbitUI/LibOrbitUI-1.0`. `python .scripts/fetch-libs.py` materializes that runtime for clean-checkout validation while preserving development junctions, including with `--force`. GitHub packaging reads the same pin. Portal has no color settings and embeds no ColorPicker dependency.
 - Orbit-Libs is public. CI retains its `ORBIT_PAT` Git credential policy and skips the full package check for fork and Dependabot pull requests. Trusted validation runs before tagging and publishing.
 - Blizzard Edit Mode Save/Revert does not govern standalone commits. A forced hidden/combat session aborts an unfinished drag; successful drag stop commits to the product store.
 - Secure action attributes are cleared during editing and when recycling icons. Left click activates travel; right-button down toggles a favorite once and never casts. The frame uses an installed secure combat visibility driver; encounter policy is checked separately before protected mutations.

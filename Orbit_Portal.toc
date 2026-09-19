@@ -1,4 +1,4 @@
-## Interface: 120100
+## Interface: 120100, 120105
 ## Title: Orbit: Portal
 ## Notes: A Scrollable bar for your characters portals.
 ## Author: MoONSHO7 / M7

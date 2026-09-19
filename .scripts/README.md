@@ -7,7 +7,7 @@ Source and package checks for the Portal addon.
 Prevent invalid runtime bundles from reaching automatic tagging or publishing.
 
 ## Implementation
-`check-package.py` walks the TOC/XML closure, compiles Lua 5.1 without executing it, checks Interface 120100 and the standalone SavedVariables declaration, then validates required assets and the LibOrbitUI content manifest. Run with Python 3.12 and `lupa==2.8`; `--root` checks a materialized package and `--release` rejects local library links.
+`check-package.py` walks the TOC/XML closure, compiles Lua 5.1 without executing it, checks distinct positive Interface versions including 120100 and the standalone SavedVariables declaration, then validates required assets and the LibOrbitUI content manifest. Run with Python 3.12 and `lupa==2.8`; `--root` checks a materialized package and `--release` rejects local library links. Version-list acceptance does not certify support for another client.
 
 The reusable `.github/workflows/validate.yml` fetches the pinned library before checking the package for tag creation and publishing. `fetch-libs.py` reads the URL, full commit SHA and runtime subdirectory directly from `.pkgmeta`, fetches that commit using Git credentials, and materializes ordinary files with `git archive`. Run `python .scripts/fetch-libs.py` from a checkout; `--root` targets a separate clean checkout and `--force` refreshes only ordinary dependency directories. Development symlinks and junctions are always preserved.
 
