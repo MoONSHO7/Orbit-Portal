@@ -4,9 +4,9 @@
   "apiMinor": 8,
   "source": "Orbit-Libs/LibOrbitUI/LibOrbitUI-1.0",
   "files": {
-    "Libs/LibOrbitUI-1.0/Addon/Addon.lua": "33b9a2352a1fdf8a6c17178e18788ce5b88efd051133c5f0f4b6f086dc068b04",
+    "Libs/LibOrbitUI-1.0/Addon/Addon.lua": "2a0bdc950b49d61ea9036d969890b5611851c8b2672e6989eca8232eba460235",
     "Libs/LibOrbitUI-1.0/Addon/AddonMovement.lua": "70d1cffe43f281807255c1a5ac0cc9fc5fcdd2c79612e578d17126da7559f6c7",
-    "Libs/LibOrbitUI-1.0/Addon/AddonSettings.lua": "539c577be3421a0b9656546a66194a85bd73204bf64547faa8d18e02e58a60a4",
+    "Libs/LibOrbitUI-1.0/Addon/AddonSettings.lua": "1f4708d0d4fd05745b876ddbecc504bbd647b5f043298a2c538c21fbf08bab50",
     "Libs/LibOrbitUI-1.0/Config/Config.lua": "2e550fba20b140c37ef75e1a42134995f782d93dd0eb3e1a4f5bb7c8d6473a58",
     "Libs/LibOrbitUI-1.0/Config/ConfigColorProvider.lua": "58daa489026e029c4d974042230454e2c3a02ed4f7cd49a9bd68a1d38545e13a",
     "Libs/LibOrbitUI-1.0/Config/ConfigPickerWidgets.lua": "a1f47eb9d705ac70e601029e8351cc0157f635e8589b178d8c530aed73bdafd5",
@@ -40,7 +40,7 @@
     "Libs/LibOrbitUI-1.0/Core/Callbacks.lua": "33f13478112284d94d76b8aa2dda1799568a4b4202a6a6e2714f63c9be4b4cf5",
     "Libs/LibOrbitUI-1.0/Core/Client.lua": "b73107d0423959277ba03977593f5a577a34e2a5de783695adc6faf56175214f",
     "Libs/LibOrbitUI-1.0/Core/Context.lua": "33fd3e29e5cbeb13e1435ed27e545d599292d68794cc41810c8fff56191173ee",
-    "Libs/LibOrbitUI-1.0/Core/Controller.lua": "8f31966b6d8baad163cb1cde2fe2aaf2163a686f03278da4e3aa0791b1596045",
+    "Libs/LibOrbitUI-1.0/Core/Controller.lua": "169005cf2c2e5d37ea32acec46b03c0f18bbf67b9a614b3997c26e14a2760aa6",
     "Libs/LibOrbitUI-1.0/Core/Events.lua": "3ffd5dedc7433dd0674ba44a634c071800f6fffe69df7c5b2a252db3f31e4e0b",
     "Libs/LibOrbitUI-1.0/Core/Runtime.lua": "96c19b6137bf7da4775ea250d8f8cf8e7399ea5a907dc90b5570ac333fab37cd",
     "Libs/LibOrbitUI-1.0/Core/SettingsStore.lua": "5a0cc1445e196717b6174c2e3679658b1416cd6bfc340085696f2c0958c97074",
@@ -57,5 +57,5 @@
     "Libs/LibOrbitUI-1.0/Rendering/TextPosition.lua": "da94abb3922b9049e8937c5cfd39a39f5c3061eecc2487c9091014501d5954d6",
     "Localization/Generated.lua": "7bc2e9d67d164acc2995b3ce35635f98685ecf48b106d57756fbeee7dff9dc8c"
   },
-  "contentRevision": "4c4e5c1e29ff411cc7c6287d788c7415880467fe5b0907de785b181457099489"
+  "contentRevision": "5898ebbe54719d0b5ed3afcbfbf698c51005bc79d5e0e700cb9f495d5d2284da"
 }
