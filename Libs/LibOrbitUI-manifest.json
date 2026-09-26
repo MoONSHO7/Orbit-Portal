@@ -6,7 +6,7 @@
   "files": {
     "Libs/LibOrbitUI-1.0/Addon/Addon.lua": "2a0bdc950b49d61ea9036d969890b5611851c8b2672e6989eca8232eba460235",
     "Libs/LibOrbitUI-1.0/Addon/AddonMovement.lua": "70d1cffe43f281807255c1a5ac0cc9fc5fcdd2c79612e578d17126da7559f6c7",
-    "Libs/LibOrbitUI-1.0/Addon/AddonSettings.lua": "1f4708d0d4fd05745b876ddbecc504bbd647b5f043298a2c538c21fbf08bab50",
+    "Libs/LibOrbitUI-1.0/Addon/AddonSettings.lua": "78d4d928a9299a781c6fe793e1bf54c0c0386f4a5b48bc227f2591f6b879d5f4",
     "Libs/LibOrbitUI-1.0/Config/Config.lua": "2e550fba20b140c37ef75e1a42134995f782d93dd0eb3e1a4f5bb7c8d6473a58",
     "Libs/LibOrbitUI-1.0/Config/ConfigColorProvider.lua": "58daa489026e029c4d974042230454e2c3a02ed4f7cd49a9bd68a1d38545e13a",
     "Libs/LibOrbitUI-1.0/Config/ConfigPickerWidgets.lua": "a1f47eb9d705ac70e601029e8351cc0157f635e8589b178d8c530aed73bdafd5",
@@ -57,5 +57,5 @@
     "Libs/LibOrbitUI-1.0/Rendering/TextPosition.lua": "da94abb3922b9049e8937c5cfd39a39f5c3061eecc2487c9091014501d5954d6",
     "Localization/Generated.lua": "7bc2e9d67d164acc2995b3ce35635f98685ecf48b106d57756fbeee7dff9dc8c"
   },
-  "contentRevision": "5898ebbe54719d0b5ed3afcbfbf698c51005bc79d5e0e700cb9f495d5d2284da"
+  "contentRevision": "0ad500e1d1365179fd3b587310ac5aa5f9d09bcd88bb0bb964ca467086f7c0d6"
 }

@@ -22,6 +22,7 @@ Localization\Portal.lua
 Localization\Messages.lua
 Core\Settings\PortalDefaults.lua
 Core\Settings\PortalStore.lua
+Core\PortalFonts.lua
 Core\PortalServices.lua
 Core\Integrations\Orbit.lua
 Core\PortalData.lua

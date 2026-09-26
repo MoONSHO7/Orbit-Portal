@@ -12,7 +12,22 @@ from lupa.lua51 import LuaRuntime
 ROOT = Path(__file__).resolve().parents[1]
 TOC = "Orbit_Portal.toc"
 MANIFEST = "Libs/LibOrbitUI-manifest.json"
-ASSETS = ("Orbit.png", "Audio/switch-sound.ogg", "LICENSE")
+ASSETS = (
+    "Orbit.png",
+    "Audio/switch-sound.ogg",
+    "Assets/Fonts/OrbitSansCondensedUI-ExtraBold.ttf",
+    "Assets/Fonts/OrbitSansCondensedUIKR-ExtraBold.ttf",
+    "Assets/Fonts/OrbitSansCondensedUISC-ExtraBold.ttf",
+    "Assets/Fonts/OrbitSansCondensedUITC-ExtraBold.ttf",
+    "Assets/Fonts/OrbitSansCondensedChat-Bold.ttf",
+    "Assets/Fonts/OrbitSansCondensedChatKR-Bold.ttf",
+    "Assets/Fonts/OrbitSansCondensedChatSC-Bold.ttf",
+    "Assets/Fonts/OrbitSansCondensedChatTC-Bold.ttf",
+    "Assets/Fonts/licenses/OFL-Barlow.txt",
+    "Assets/Fonts/licenses/OFL-NotoSansCJK.txt",
+    "Assets/Fonts/licenses/OFL-NotoSymbolsEmoji.txt",
+    "LICENSE",
+)
 LIBRARY_ASSETS = {"Libs/LibOrbitUI-1.0/LICENSE"}
 
 
