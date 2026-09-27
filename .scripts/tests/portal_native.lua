@@ -1,6 +1,22 @@
 local scenario = ...
+local scannerIdentities = {
+    scanner_human_mage = { class = "MAGE", race = "Human" },
+    scanner_draenei_mage = { class = "MAGE", race = "Draenei" },
+    scanner_lightforged_draenei = { class = "PALADIN", race = "LightforgedDraenei" },
+    scanner_nightelf_druid = { class = "DRUID", race = "NightElf" },
+    scanner_gnome_rogue = { class = "ROGUE", race = "Gnome" },
+    scanner_engineer = { class = "MAGE", race = "Human" },
+}
+local scannerIdentity = scannerIdentities[scenario] or scannerIdentities.scanner_human_mage
 addon, frames, timers, errors, messages, eventCallbacks = {}, {}, {}, {}, {}, {}
 combat, encounter, now, mapRequests, frameCreations, fadeRegistrations = false, false, 10, 0, 0, 0
+portalScannerTest = {
+    equippedItems = {},
+    itemCounts = {},
+    knownSpells = {},
+    ownedToys = {},
+    usableToys = {},
+}
 table.freeze = function(value)
     return value
 end
@@ -53,6 +69,9 @@ end
 function GetLocale()
     return "enUS"
 end
+function GetBuildInfo()
+    return "12.1.0", "69933", "Sep 27 2026", 120100
+end
 function GetCursorPosition()
     return 0, 0
 end
@@ -69,7 +88,10 @@ function GetTime()
     return now
 end
 function UnitClass()
-    return "Mage", "MAGE"
+    return scannerIdentity.class, scannerIdentity.class
+end
+function UnitRace()
+    return scannerIdentity.race, scannerIdentity.race
 end
 function UnitFactionGroup()
     return "Alliance"
@@ -110,6 +132,52 @@ C_MythicPlus = {
         return { level = 10, durationSec = 1200 }
     end,
 }
+C_Container = {
+    GetItemCooldown = function()
+        return 0, 0
+    end,
+}
+C_Item = {
+    GetItemCount = function(itemID)
+        return portalScannerTest.itemCounts[itemID] or 0
+    end,
+    GetItemInfo = function(itemID)
+        return "Fixture Item " .. itemID
+    end,
+    GetItemInfoInstant = function(itemID)
+        return itemID, nil, nil, nil, 134400
+    end,
+    IsEquippedItem = function(itemID)
+        return portalScannerTest.equippedItems[itemID] == true
+    end,
+}
+C_Spell = {
+    GetSpellCooldown = function()
+        return { startTime = 0, duration = 0 }
+    end,
+    GetSpellInfo = function(spellID)
+        return { name = "Fixture Spell " .. spellID, iconID = 134400 }
+    end,
+}
+C_SpellBook = {
+    IsSpellKnown = function(spellID)
+        return portalScannerTest.knownSpells[spellID] == true
+    end,
+}
+C_ToyBox = {
+    IsToyUsable = function(itemID)
+        return portalScannerTest.usableToys[itemID] == true
+    end,
+}
+function PlayerHasToy(itemID)
+    return portalScannerTest.ownedToys[itemID] == true
+end
+function GetProfessions()
+    return nil, nil, nil, nil, nil
+end
+function GetProfessionInfo()
+    return nil
+end
 EventRegistry = {}
 function EventRegistry:RegisterCallback(event, callback, owner)
     eventCallbacks[event] = eventCallbacks[event] or {}

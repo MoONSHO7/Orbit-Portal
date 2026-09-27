@@ -8,11 +8,11 @@ local PD = addon.PortalData
 -- [ CONSTANTS ] -------------------------------------------------------------------------------------------------------
 local HEARTHSTONE_ITEM_ID = 6948
 local HEARTHSTONE_ICON_FALLBACK = 134414
-local ENGINEERING_SKILL_LINE = 202
 local MIN_LEVEL_FOR_HOUSING = 80
 
 local PLAYER_CLASS = select(2, UnitClass("player"))
 local PLAYER_FACTION = UnitFactionGroup("player")
+local PLAYER_RACE = select(2, UnitRace("player"))
 
 local cachedHouseList
 
@@ -28,7 +28,7 @@ local function IsToyUsable(itemID)
     return C_ToyBox.IsToyUsable(itemID)
 end
 
--- GetItemCount only counts bag contents, so a worn teleport ring/cloak/tabard needs the equipped check to stay listed.
+-- GetItemCount excludes worn gear, so equipped teleport rings, cloaks, and tabards need a separate ownership check.
 local function HasItem(itemID)
     return C_Item.GetItemCount(itemID) > 0 or C_Item.IsEquippedItem(itemID)
 end
@@ -47,23 +47,15 @@ local function MeetsClassRequirement(data)
     return data.class == PLAYER_CLASS
 end
 
-local function GetProfessionRank(targetSkillLineID)
-    for _, profIndex in pairs({ GetProfessions() }) do
-        if profIndex then
-            local _, _, skillRank, _, _, _, skillLineID = GetProfessionInfo(profIndex)
-            if skillLineID == targetSkillLineID then
-                return skillRank
-            end
-        end
-    end
-end
-
-local function MeetsSkillRequirement(data)
-    if not data.reqSkillLine then
+local function MeetsRaceRequirement(data)
+    if not data.races then
         return true
     end
-    local rank = GetProfessionRank(data.reqSkillLine)
-    return rank ~= nil and rank >= (data.reqSkill or 1)
+    return data.races[PLAYER_RACE] == true
+end
+
+local function MeetsItemRequirements(data)
+    return MeetsFactionRequirement(data) and MeetsClassRequirement(data) and MeetsRaceRequirement(data)
 end
 
 local function GetCooldownInfo(isSpell, id)
@@ -113,14 +105,19 @@ local function GetItemDetails(itemID)
 end
 
 local function ProbeItemAvailability(data)
+    if not MeetsItemRequirements(data) then
+        return false
+    end
+
     local available = false
     local name, icon
-    if data.type == "toy" then
+    local itemType = data.type or "toy"
+    if itemType == "toy" then
         available = IsToyUsable(data.itemID)
         if available then
             name, icon = GetItemDetails(data.itemID)
         end
-    elseif data.type == "item" then
+    elseif itemType == "item" then
         available = HasItem(data.itemID)
         if available then
             name, icon = GetItemDetails(data.itemID)
@@ -389,33 +386,19 @@ function Scanner:ScanToys()
     local results = {}
 
     for _, data in ipairs(PD.TOY or {}) do
-        if MeetsFactionRequirement(data) and MeetsSkillRequirement(data) then
-            local itemID = data.itemID
-            local available = false
-            local name, icon
-
-            if data.type == "item" then
-                available = HasItem(itemID)
-            else
-                available = IsToyUsable(itemID)
-            end
-
-            if available then
-                name, icon = GetItemDetails(itemID)
-                if name then
-                    local cooldown, cooldownDuration = GetCooldownInfo(false, itemID)
-                    table.insert(results, {
-                        type = data.type or "toy",
-                        itemID = itemID,
-                        name = name or data.name,
-                        icon = icon,
-                        cooldown = cooldown,
-                        cooldownDuration = cooldownDuration,
-                        category = "TOY",
-                        destination = data.destination,
-                    })
-                end
-            end
+        local available, name, icon = ProbeItemAvailability(data)
+        if available and name then
+            local cooldown, cooldownDuration = GetCooldownInfo(false, data.itemID)
+            table.insert(results, {
+                type = data.type or "toy",
+                itemID = data.itemID,
+                name = name or data.name,
+                icon = icon,
+                cooldown = cooldown,
+                cooldownDuration = cooldownDuration,
+                category = "TOY",
+                destination = data.destination,
+            })
         end
     end
 
@@ -425,38 +408,20 @@ end
 function Scanner:ScanEngineeringSpells()
     local results = {}
 
-    local rank = GetProfessionRank(ENGINEERING_SKILL_LINE)
-    if not rank then
-        return results
-    end
-
+    -- ToyBox owns Engineering rank and specialization checks; the Professions UI does not initialize ranks at login.
     for _, data in ipairs(PD.ENGINEER or {}) do
-        if MeetsFactionRequirement(data) and (not data.reqSkill or rank >= data.reqSkill) then
-            local available = false
-            local name, icon
-            local itemID = data.itemID
-
-            if data.type == "toy" then
-                available = IsToyUsable(itemID)
-            elseif data.type == "item" then
-                available = HasItem(itemID)
-            end
-
-            if available then
-                name, icon = GetItemDetails(itemID)
-                if name then
-                    local cooldown, cooldownDuration = GetCooldownInfo(false, itemID)
-                    table.insert(results, {
-                        type = data.type or "toy",
-                        itemID = itemID,
-                        name = name or data.name,
-                        icon = icon,
-                        cooldown = cooldown,
-                        cooldownDuration = cooldownDuration,
-                        category = "ENGINEER",
-                    })
-                end
-            end
+        local available, name, icon = ProbeItemAvailability(data)
+        if available and name then
+            local cooldown, cooldownDuration = GetCooldownInfo(false, data.itemID)
+            table.insert(results, {
+                type = data.type or "toy",
+                itemID = data.itemID,
+                name = name or data.name,
+                icon = icon,
+                cooldown = cooldown,
+                cooldownDuration = cooldownDuration,
+                category = "ENGINEER",
+            })
         end
     end
 

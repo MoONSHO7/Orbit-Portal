@@ -93,7 +93,6 @@ PD.TWW_DUNGEON = {
     { spellID = 445418, name = "Siege of Boralus", short = "SoB", challengeModeID = 353, faction = "Alliance" },
     { spellID = 464256, name = "Siege of Boralus", short = "SoB", challengeModeID = 353, faction = "Horde" },
     { spellID = 445440, name = "Cinderbrew Meadery", short = "BREW", challengeModeID = 506 },
-    { spellID = 467546, name = "Cinderbrew Meadery (Alt)", short = "BREW", challengeModeID = 506 },
     { spellID = 445441, name = "Darkflame Cleft", short = "DFC", challengeModeID = 504 },
     { spellID = 445443, name = "The Rookery", short = "ROOK", challengeModeID = 500 },
 }
@@ -224,7 +223,12 @@ PD.HEARTHSTONE_SHARED = {
     { itemID = 206195, name = "Path of the Naaru", type = "toy" },
     { itemID = 208704, name = "Deepdweller's Earthen Hearthstone", type = "toy" },
     { itemID = 209035, name = "Hearthstone of the Flame", type = "toy" },
-    { itemID = 210455, name = "Draenic Hologem", type = "toy" },
+    {
+        itemID = 210455,
+        name = "Draenic Hologem",
+        type = "toy",
+        races = { Draenei = true, LightforgedDraenei = true },
+    },
     { itemID = 212337, name = "Stone of the Hearth", type = "toy" },
     { itemID = 228940, name = "Notorious Thread's Hearthstone", type = "toy" },
     { itemID = 257736, name = "Lightcalled Hearthstone", type = "toy" },
@@ -235,7 +239,7 @@ PD.HEARTHSTONE_SHARED = {
 PD.HEARTHSTONE_UNIQUE = {
     { itemID = 110560, name = "Garrison Hearthstone", type = "toy" },
     { itemID = 140192, name = "Dalaran Hearthstone", type = "toy" },
-    { itemID = 141605, name = "Flight Master's Whistle", type = "item" },
+    { itemID = 141605, name = "Flight Master's Whistle", type = "toy" },
 }
 
 -- [ CLASS PORTALS ] ---------------------------------------------------------------------------------------------------
@@ -326,30 +330,30 @@ PD.MAGE_PORTAL = {
 
 -- [ ENGINEERING PORTALS ] ---------------------------------------------------------------------------------------------
 PD.ENGINEER = {
-    { itemID = 18986, name = "Ultrasafe Transporter: Gadgetzan", type = "item", reqSkill = 260 },
-    { itemID = 18984, name = "Dimensional Ripper - Everlook", type = "item", reqSkill = 260 },
-    { itemID = 30544, name = "Ultrasafe Transporter: Toshley's Station", type = "item", reqSkill = 350 },
-    { itemID = 30542, name = "Dimensional Ripper - Area 52", type = "item", reqSkill = 350 },
+    { itemID = 18986, name = "Ultrasafe Transporter: Gadgetzan", type = "toy" },
+    { itemID = 18984, name = "Dimensional Ripper - Everlook", type = "toy" },
+    { itemID = 30544, name = "Ultrasafe Transporter: Toshley's Station", type = "toy" },
+    { itemID = 30542, name = "Dimensional Ripper - Area 52", type = "toy" },
 
-    { itemID = 48933, name = "Wormhole Generator: Northrend", type = "toy", reqSkill = 415 },
+    { itemID = 48933, name = "Wormhole Generator: Northrend", type = "toy" },
 
-    { itemID = 87215, name = "Wormhole Generator: Pandaria", type = "toy", reqSkill = 600 },
+    { itemID = 87215, name = "Wormhole Generator: Pandaria", type = "toy" },
 
-    { itemID = 112059, name = "Wormhole Centrifuge", type = "toy", reqSkill = 700 },
+    { itemID = 112059, name = "Wormhole Centrifuge", type = "toy" },
 
-    { itemID = 151652, name = "Wormhole Generator: Argus", type = "toy", reqSkill = 800 },
+    { itemID = 151652, name = "Wormhole Generator: Argus", type = "toy" },
 
-    { itemID = 168807, name = "Wormhole Generator: Kul Tiras", type = "toy", reqSkill = 1, faction = "Alliance" },
-    { itemID = 168808, name = "Wormhole Generator: Zandalar", type = "toy", reqSkill = 1, faction = "Horde" },
-    { itemID = 167075, name = "Ultrasafe Transporter: Mechagon", type = "item", reqSkill = 1 },
+    { itemID = 168807, name = "Wormhole Generator: Kul Tiras", type = "toy" },
+    { itemID = 168808, name = "Wormhole Generator: Zandalar", type = "toy" },
+    { itemID = 167075, name = "Ultrasafe Transporter: Mechagon", type = "item" },
 
-    { itemID = 172924, name = "Wormhole Generator: Shadowlands", type = "toy", reqSkill = 1 },
+    { itemID = 172924, name = "Wormhole Generator: Shadowlands", type = "toy" },
 
-    { itemID = 198156, name = "Wyrmhole Generator: Dragon Isles", type = "toy", reqSkill = 1 },
+    { itemID = 198156, name = "Wyrmhole Generator: Dragon Isles", type = "toy" },
 
-    { itemID = 221966, name = "Wormhole Generator: Khaz Algar", type = "toy", reqSkill = 1 },
+    { itemID = 221966, name = "Wormhole Generator: Khaz Algar", type = "toy" },
 
-    { itemID = 248485, name = "Wormhole Generator: Quel'Thalas", type = "toy", reqSkill = 1 },
+    { itemID = 248485, name = "Wormhole Generator: Quel'Thalas", type = "toy" },
 }
 
 -- [ PORTAL TOYS (Miscellaneous) ] -------------------------------------------------------------------------------------
@@ -358,22 +362,54 @@ PD.TOY = {
     { itemID = 64457, name = "The Last Relic of Argus", destination = "Random" },
     { itemID = 95567, name = "Kirin Tor Beacon", destination = "Isle of Thunder", faction = "Alliance" },
     { itemID = 95568, name = "Sunreaver Beacon", destination = "Isle of Thunder", faction = "Horde" },
-    { itemID = 103678, name = "Time-Lost Artifact", destination = "Timeless Isle" },
-    { itemID = 128353, name = "Admiral's Compass", destination = "Garrison Shipyard" },
-    { itemID = 129276, name = "Beginner's Guide to Dimensional Rifting", destination = "Random Draenor" },
-    { itemID = 118662, name = "Bladespire Relic", destination = "Frostfire Ridge", faction = "Horde" },
-    { itemID = 118663, name = "Relic of Karabor", destination = "Shadowmoon Valley", faction = "Alliance" },
-    { itemID = 119183, name = "Scroll of Risky Recall", destination = "Random Old Location" },
-    { itemID = 136849, name = "Nature's Beacon", destination = "Dreamgrove" },
-    { itemID = 139590, name = "Scroll of Teleport: Ravenholdt", destination = "Ravenholdt" },
+    { itemID = 103678, name = "Time-Lost Artifact", destination = "Timeless Isle", type = "item" },
+    { itemID = 128353, name = "Admiral's Compass", destination = "Garrison Shipyard", type = "item" },
+    {
+        itemID = 129276,
+        name = "Beginner's Guide to Dimensional Rifting",
+        destination = "Random Draenor",
+        type = "item",
+    },
+    { itemID = 118662, name = "Bladespire Relic", destination = "Frostfire Ridge", type = "item", faction = "Horde" },
+    {
+        itemID = 118663,
+        name = "Relic of Karabor",
+        destination = "Shadowmoon Valley",
+        type = "item",
+        faction = "Alliance",
+    },
+    { itemID = 119183, name = "Scroll of Risky Recall", destination = "Random Old Location", type = "item" },
+    { itemID = 136849, name = "Nature's Beacon", destination = "Dreamgrove", class = "DRUID" },
+    {
+        itemID = 139590,
+        name = "Scroll of Teleport: Ravenholdt",
+        destination = "Ravenholdt",
+        type = "item",
+        class = "ROGUE",
+    },
     { itemID = 140324, name = "Mobile Telemancy Beacon", destination = "Shal'aran" },
-    { itemID = 140493, name = "Adept's Guide to Dimensional Rifting", destination = "Random Legion" },
+    {
+        itemID = 140493,
+        name = "Adept's Guide to Dimensional Rifting",
+        destination = "Random Legion",
+        type = "item",
+    },
     { itemID = 151016, name = "Fractured Necrolyte Skull", destination = "Black Temple" },
-    { itemID = 152964, name = "Greater Spatial Rift", destination = "Argus" },
     { itemID = 153004, name = "Unstable Portal Emitter", destination = "Random" },
-    { itemID = 168862, name = "G.E.A.R. Tracking Beacon", destination = "Mechagon" },
-    { itemID = 180817, name = "Cypher of Relocation", destination = "Oribos" },
-    { itemID = 202046, name = "Lucky Tortollan Charm", destination = "Seeker's Vista (Stormsong)" },
+    {
+        itemID = 168862,
+        name = "G.E.A.R. Tracking Beacon",
+        destination = "Mechagon",
+        type = "item",
+        races = { Gnome = true },
+    },
+    { itemID = 180817, name = "Cypher of Relocation", destination = "Oribos", type = "item" },
+    {
+        itemID = 202046,
+        name = "Lucky Tortollan Charm",
+        destination = "Seeker's Vista (Stormsong)",
+        type = "item",
+    },
     { itemID = 243056, name = "Delver's Mana-Bound Ethergate", destination = "Dornogal" },
     { itemID = 253629, name = "Personal Key to the Arcantina", destination = "The Arcantina" },
     { itemID = 276371, name = "Lightveil Recall Beacon", destination = "Umbral Base Camp" },
@@ -415,13 +451,6 @@ PD.TOY = {
     { itemID = 37863, name = "Direbrew's Remote", destination = "Blackrock Depths", type = "item" },
     { itemID = 52251, name = "Jaina's Locket", destination = "Dalaran (Northrend)", type = "item" },
     { itemID = 32757, name = "Blessed Medallion of Karabor", destination = "Black Temple", type = "item" },
-    {
-        itemID = 50287,
-        name = "Boots of the Bay",
-        destination = "Booty Bay",
-        type = "item",
-        reqSkillLine = 356,
-        reqSkill = 200,
-    },
+    { itemID = 50287, name = "Boots of the Bay", destination = "Booty Bay", type = "item" },
     { itemID = 142469, name = "Violet Seal of the Grand Magus", destination = "Karazhan", type = "item" },
 }

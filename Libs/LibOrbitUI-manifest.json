@@ -11,7 +11,7 @@
     "Libs/LibOrbitUI-1.0/Config/ConfigColorProvider.lua": "58daa489026e029c4d974042230454e2c3a02ed4f7cd49a9bd68a1d38545e13a",
     "Libs/LibOrbitUI-1.0/Config/ConfigPickerWidgets.lua": "a1f47eb9d705ac70e601029e8351cc0157f635e8589b178d8c530aed73bdafd5",
     "Libs/LibOrbitUI-1.0/Config/ConfigSchema.lua": "17e5bee3d178d0fcdc97c44d59e0a1015b64dfbd28eaca9597924c328893b497",
-    "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigConfirmPopup.lua": "2339f0dc13996b6265a6f6f3977a444d8b5c5743db1bfc0518f1498bcd5816be",
+    "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigConfirmPopup.lua": "47f5dceea69d91f5388c3c8c156d1a4cd262a21d4e56e1da4b167547c9a62d6b",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigDialog.lua": "bbbadb10ca23295231c4e6a2d1139fc8cebea1eb652ecba89b0b38c890efb97b",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigInputPopup.lua": "301a68c9d4d369879f4f239f4c2a4efc1768eddf19a6528fd8fafdc7da5c1194",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigPanel.lua": "e003e101c3b90a40b3c7f8fc11bb4c621ca6a2bade2bc10d2a961fbc2ea156af",
@@ -57,5 +57,5 @@
     "Libs/LibOrbitUI-1.0/Rendering/TextPosition.lua": "da94abb3922b9049e8937c5cfd39a39f5c3061eecc2487c9091014501d5954d6",
     "Localization/Generated.lua": "7bc2e9d67d164acc2995b3ce35635f98685ecf48b106d57756fbeee7dff9dc8c"
   },
-  "contentRevision": "0ad500e1d1365179fd3b587310ac5aa5f9d09bcd88bb0bb964ca467086f7c0d6"
+  "contentRevision": "c732ea9363c33e07c218071b38b8f235492157fa27e02e75677df6a03c99fc37"
 }
