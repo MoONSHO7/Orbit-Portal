@@ -44,6 +44,40 @@ jobs:
       - name: Validate runtime package
         run: python .scripts/check-package.py --release
 
+  test:
+    if: github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Authenticate private library access
+        env:
+          GH_TOKEN: ${{ secrets.ORBIT_PAT }}
+        run: |
+          test -n "$GH_TOKEN" || { echo "ORBIT_PAT must grant read access to LibOrbitUI." >&2; exit 1; }
+          gh auth setup-git --hostname github.com
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Lua 5.1 parser runtime
+        run: python -m pip install lupa==2.8
+
+      - name: Fetch pinned libraries
+        env:
+          GH_TOKEN: ${{ secrets.ORBIT_PAT }}
+        run: python .scripts/fetch-libs.py
+
+      - name: Run Portal runtime suite
+        run: python .scripts/test-portal.py
+
   unavailable-library-coverage:
     if: github.event_name == 'pull_request' && (github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
