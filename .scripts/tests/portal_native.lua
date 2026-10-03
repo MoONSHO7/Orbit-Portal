@@ -1,4 +1,11 @@
 local scenario = ...
+function debugstack()
+    return "Interface/AddOns/Orbit_Portal/Libs/LibOrbitUI-1.0/Rendering/TooltipClick.lua:1"
+end
+function CreateSimpleTextureMarkup(path)
+    return path
+end
+SHIFT_KEY_TEXT = "Shift"
 local scannerIdentities = {
     scanner_human_mage = { class = "MAGE", race = "Human" },
     scanner_draenei_mage = { class = "MAGE", race = "Draenei" },
@@ -167,6 +174,14 @@ C_SpellBook = {
 C_ToyBox = {
     IsToyUsable = function(itemID)
         return portalScannerTest.usableToys[itemID] == true
+    end,
+}
+C_Texture = {
+    GetAtlasInfo = function(name)
+        if scenario ~= "noatlas" and name == "housing-basic-container" then
+            return { width = 1, height = 1 }
+        end
+        return nil
     end,
 }
 function PlayerHasToy(itemID)
@@ -748,6 +763,10 @@ if scenario == "legacy" then
     }
     Orbit = {
         Engine = Engine,
+        Tooltip = CreateFrame("GameTooltip", "OrbitTooltip", UIParent, "GameTooltipTemplate"),
+        TooltipHide = function()
+            Orbit.Tooltip:Hide()
+        end,
         ExternalUIHost = { legacyPluginVersion = 1 },
         Skin = {
             SetFontWithShadow = function(_, region, path, size, flags)
@@ -772,6 +791,12 @@ if scenario == "legacy" then
         GetTheme = function()
             return nil
         end,
+        Media = {
+            Font = { OrbitSansChat = "Orbit UI Chat" },
+            FetchFont = function(_, name)
+                return name and ("Fixture\\" .. name) or nil
+            end,
+        },
         IsPluginEnabled = function()
             return hostEnabled
         end,

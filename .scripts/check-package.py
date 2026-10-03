@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import posixpath
+import re
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -28,7 +29,9 @@ ASSETS = (
     "Assets/Fonts/licenses/OFL-NotoSymbolsEmoji.txt",
     "LICENSE",
 )
-LIBRARY_ASSETS = {"Libs/LibOrbitUI-1.0/LICENSE"}
+LIBRARY_ASSETS = {"Libs/LibOrbitUI-1.0/LICENSE",
+                  *(f"Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-click-{button}.tga"
+                    for button in ("left", "middle", "right"))}
 
 
 def validate(root, release=False):
@@ -80,6 +83,11 @@ def validate(root, release=False):
         raise ValueError("Duplicate Interface version")
     if headers.get("SavedVariables") != "OrbitPortalDB":
         raise ValueError("Portal's standalone store must be declared in SavedVariables")
+    bootstrap = (root / "Libs/LibOrbitUI-1.0/Core/Bootstrap.lua").read_text(encoding="utf-8")
+    major = re.search(r"VERSION_MAJOR\s*=\s*(\d+)", bootstrap)
+    minor = re.search(r"VERSION_MINOR\s*=\s*(\d+)", bootstrap)
+    if not major or not minor or int(major[1]) != 1 or int(minor[1]) < 10:
+        raise ValueError("Portal requires LibOrbitUI API 1.10 or newer within major 1")
     for asset in ASSETS:
         read(asset)
     _, content = read(MANIFEST)

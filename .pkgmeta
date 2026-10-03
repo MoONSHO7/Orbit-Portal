@@ -1,10 +1,10 @@
 package-as: Orbit_Portal
 
 externals:
-  # LibOrbitUI release 1.6 provides API 1.8; pin its verified release commit.
+  # LibOrbitUI release 1.7 provides API 1.9; pin its verified release commit.
   Libs/LibOrbitUI-1.0:
     url: https://github.com/MoONSHO7/Orbit-Libs
-    commit: 10bc9ae8d0f8db886549d59c3547da4af64b3245
+    commit: ce846adc8f03fd00ca4811f87430007b4db652c0
     path: LibOrbitUI/LibOrbitUI-1.0
 
 ignore:

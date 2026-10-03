@@ -40,7 +40,18 @@ compile_lua = lua.eval("function(source, name) assert(loadstring(source, name)) 
 for path in ROOT.rglob("*.lua"):
     compile_lua(path.read_text(encoding="utf-8"), str(path))
 
-scenarios = ("standalone", "disabled", "blocked", "future", "corrupt", "legacy", "oldhost", "loaderror", "movementerror")
+scenarios = (
+    "standalone",
+    "disabled",
+    "blocked",
+    "future",
+    "corrupt",
+    "legacy",
+    "oldhost",
+    "loaderror",
+    "movementerror",
+    "noatlas",
+)
 
 
 def load_runtime(scenario):

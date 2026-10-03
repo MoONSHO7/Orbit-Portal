@@ -119,10 +119,26 @@ Check(
     OrbitPortalSettings.OrbitPanel.configPanelOwner == OrbitPortalSettings.renderer,
     "Portal dialog uses the shared panel owner"
 )
+local background = OrbitPortalSettings.Chrome.Background
+if scenario == "noatlas" then
+    local backdrop = addon.LibOrbitUI.Config.Defaults.DialogBackdrop
+    Check(
+        background.atlas == nil
+            and background.color[1] == backdrop.r
+            and background.color[2] == backdrop.g
+            and background.color[3] == backdrop.b
+            and background.color[4] == backdrop.a,
+        "missing shell atlas falls back to the shared backdrop colour"
+    )
+else
+    Check(
+        background.atlas == "housing-basic-container" and background.color == nil,
+        "Portal uses Orbit settings shell art when the atlas resolves"
+    )
+end
 Check(
-    OrbitPortalSettings.Chrome.Background.atlas == "housing-basic-container"
-        and OrbitPortalSettings:GetWidth() == addon.LibOrbitUI.Config.Defaults.Panel.DialogWidth,
-    "Portal uses Orbit settings shell art and width"
+    OrbitPortalSettings:GetWidth() == addon.LibOrbitUI.Config.Defaults.Panel.DialogWidth,
+    "Portal uses the shared dialog width"
 )
 local footer = OrbitPortalSettings.OrbitPanel.Footer
 Check(
@@ -164,6 +180,11 @@ for _, timer in ipairs(timers) do
 end
 Check(activeTickers == 1, "only one live feature ticker after repeated toggles")
 if scenario == "legacy" then
+    Check(
+        addon.PortalServices.GetSearchFontPath() == "Fixture\\Orbit UI Chat"
+            and addon.PortalServices.GetFontPath() == STANDARD_TEXT_FONT,
+        "hosted fonts resolve through Orbit media, with an unset theme font falling back to the standard font"
+    )
     Check(fadeRegistrations == 22 and hostCallbacks ~= nil, "legacy fade and edit lifecycle restored on each enable")
     Plugin:AddSettings({}, {})
     hostSuppressed = true
