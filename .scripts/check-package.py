@@ -86,8 +86,8 @@ def validate(root, release=False):
     bootstrap = (root / "Libs/LibOrbitUI-1.0/Core/Bootstrap.lua").read_text(encoding="utf-8")
     major = re.search(r"VERSION_MAJOR\s*=\s*(\d+)", bootstrap)
     minor = re.search(r"VERSION_MINOR\s*=\s*(\d+)", bootstrap)
-    if not major or not minor or int(major[1]) != 1 or int(minor[1]) < 10:
-        raise ValueError("Portal requires LibOrbitUI API 1.10 or newer within major 1")
+    if not major or not minor or int(major[1]) != 1 or int(minor[1]) < 11:
+        raise ValueError("Portal requires LibOrbitUI API 1.11 or newer within major 1")
     for asset in ASSETS:
         read(asset)
     _, content = read(MANIFEST)

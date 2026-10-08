@@ -141,12 +141,15 @@ function Bridge.RenderSettings(plugin, dialog, systemFrame, ctx)
     for _, tab in ipairs(tabs) do
         labels[#labels + 1] = tab.label
     end
-    local schema = { controls = {}, extraButtons = {} }
+    local schema = { controls = {}, extraButtons = {}, scope = "layout" }
     builder:SetTabRefreshCallback(dialog, plugin, systemFrame)
     local current = builder:AddSettingsTabs(schema, dialog, labels, labels[1])
     for _, tab in ipairs(tabs) do
         if tab.label == current then
-            schema.controls = type(tab.controls) == "function" and tab.controls() or tab.controls
+            local controls = type(tab.controls) == "function" and tab.controls() or tab.controls
+            for _, control in ipairs(controls) do
+                schema.controls[#schema.controls + 1] = control
+            end
             break
         end
     end

@@ -402,6 +402,9 @@ function Frame:EnableMouse(value)
     CheckProtected(self)
     self.mouse = value
 end
+function Frame:SetPropagateMouseClicks(value)
+    self.propagateMouseClicks = value
+end
 function Frame:EnableKeyboard(value)
     assert(not combat)
     self.keyboard = value
@@ -562,6 +565,7 @@ for _, name in ipairs({
     "RegisterForDrag",
     "RegisterForClicks",
     "EnableMouseWheel",
+    "SetIgnoreParentAlpha",
     "SetTexture",
     "SetVertexColor",
     "SetBlendMode",
@@ -725,6 +729,7 @@ elseif scenario == "corrupt" then
 end
 if scenario == "legacy" then
     hostSettings, hostCallbacks, hostEnabled = {}, nil, true
+    local hostValues = {}
     local Engine = {
         CanvasMode = { ComponentCatalog = { RegisterDeclared = function() end } },
         ComponentPlacement = {},
@@ -752,12 +757,23 @@ if scenario == "legacy" then
         SchemaBuilder = {
             SetTabRefreshCallback = function() end,
             AddSettingsTabs = function(_, schema, dialog, labels)
-                return labels[1]
+                local selected
+                for _, label in ipairs(labels) do
+                    if label == dialog.orbitCurrentTab then
+                        selected = label
+                    end
+                end
+                dialog.orbitCurrentTab = selected or labels[1]
+                if #labels > 1 then
+                    table.insert(schema.controls, { type = "tabs", tabs = labels, activeTab = dialog.orbitCurrentTab })
+                end
+                return dialog.orbitCurrentTab
             end,
         },
         Config = {
             Render = function(_, dialog, frame, plugin, schema)
                 assert(#schema.controls > 0)
+                hostSettings = schema
             end,
         },
     }
@@ -804,11 +820,14 @@ if scenario == "legacy" then
     function Orbit:RegisterPlugin(name, system, options)
         local plugin = { name = name, system = system, defaults = options.defaults }
         function plugin:GetSetting(_, key)
-            local value = hostSettings[key]
-            return value ~= nil and value or CopyTable(self.defaults)[key]
+            local value = hostValues[key]
+            if value ~= nil then
+                return value
+            end
+            return CopyTable(self.defaults)[key]
         end
         function plugin:SetSetting(_, key, value)
-            hostSettings[key] = value
+            hostValues[key] = value
         end
         function plugin:RegisterStandardEvents() end
         function plugin:RegisterVisibilityEvents() end

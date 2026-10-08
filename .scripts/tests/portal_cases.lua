@@ -109,6 +109,29 @@ if scenario ~= "legacy" then
         Check(not pcall(Store.Set, Store, case[1], case[2]), "invalid write rejected: " .. case[1])
     end
 end
+local tabs = addon.PortalSchema.Tabs(Plugin, ctx)
+Check(tabs[1].id == "layout" and tabs[2].id == "appearance" and tabs[3].id == "behaviours", "canonical tab order")
+for _, tab in ipairs(tabs) do
+    Check(tab.scopeText == addon.L.CFG_SETTINGS_SCOPE_LAYOUT, "tab scope visible in standalone settings")
+end
+Check(tabs[2].controls[5].type == "dropdown" and #tabs[2].controls[5].options == 3, "animation uses named choices")
+Plugin:SetSetting(1, "DisabledComponents", { "Timer", "Unrelated" })
+tabs[2].controls[4].onReset()
+Check(
+    #Plugin:GetSetting(1, "DisabledComponents") == 1 and Plugin:GetSetting(1, "DisabledComponents")[1] == "Unrelated",
+    "component reset preserves unowned components"
+)
+Plugin:SetSetting(1, "EnabledCategories", { CLASS = false, UNSUPPORTED = false })
+tabs[4].controls()[1].onReset()
+Check(
+    Plugin:GetSetting(1, "EnabledCategories").CLASS == nil
+        and Plugin:GetSetting(1, "EnabledCategories").UNSUPPORTED == false,
+    "category reset preserves unavailable categories"
+)
+Plugin:SetSetting(1, "HideLongCooldowns", true)
+Check(not tabs[3].controls[1].getValue(), "positive cooldown label reads inverse stored preference")
+tabs[3].controls[1].onChange(true)
+Check(not Plugin:GetSetting(1, "HideLongCooldowns"), "positive cooldown label writes inverse stored preference")
 Boot.ShowSettings()
 Check(OrbitPortalSettings:IsShown(), "direct standalone dialog rendered")
 Check(
@@ -118,6 +141,20 @@ Check(
 Check(
     OrbitPortalSettings.OrbitPanel.configPanelOwner == OrbitPortalSettings.renderer,
     "Portal dialog uses the shared panel owner"
+)
+local setting = OrbitPortalSettings.controls[1]
+local help = setting._tooltipHover
+Check(
+    help and help.mouse and help.propagateMouseClicks and help.relative == setting.Label,
+    "settings label help propagates clicks to the control"
+)
+Check(
+    help._tooltip():find(addon.L.CFG_SETTINGS_SCOPE_LAYOUT, 1, true),
+    "settings scope remains available in hover help"
+)
+Check(
+    #OrbitPortalSettings.layout.containerControls[setting:GetParent()] == #OrbitPortalSettings.controls,
+    "settings scope does not create a visible explanatory row"
 )
 local background = OrbitPortalSettings.Chrome.Background
 if scenario == "noatlas" then
@@ -186,7 +223,17 @@ if scenario == "legacy" then
         "hosted fonts resolve through Orbit media, with an unset theme font falling back to the standard font"
     )
     Check(fadeRegistrations == 22 and hostCallbacks ~= nil, "legacy fade and edit lifecycle restored on each enable")
-    Plugin:AddSettings({}, {})
+    local settingsDialog = { orbitCurrentTab = "Previous frame" }
+    Plugin:AddSettings(settingsDialog, {})
+    Check(hostSettings.controls[1].type == "tabs", "hosted settings retain their tab selector")
+    local settingsTabs = hostSettings.controls[1].tabs
+    Check(settingsDialog.orbitCurrentTab == settingsTabs[1], "hosted settings discard another frame's selected tab")
+    for _, label in ipairs(settingsTabs) do
+        settingsDialog.orbitCurrentTab = label
+        Plugin:AddSettings(settingsDialog, {})
+        Check(hostSettings.controls[1].activeTab == label, "hosted tabs retain the active selection")
+        Check(#hostSettings.controls > 1, "every hosted tab includes its controls after the selector")
+    end
     hostSuppressed = true
     Plugin:UpdateVisibility()
     Check(Plugin._portalHidden and Plugin.frame.driver == "hide", "host profile suppression retains hidden driver")

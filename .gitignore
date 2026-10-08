@@ -3,3 +3,7 @@
 
 # Local link to the standalone workspace library project.
 /Libs/LibOrbitUI-1.0
+
+# Python validation caches are generated locally.
+__pycache__/
+*.pyc

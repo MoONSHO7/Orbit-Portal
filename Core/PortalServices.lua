@@ -1,12 +1,14 @@
 local _, addon = ...
-local Services = addon.LibOrbitUI.CreateContext({
-	owner = addon,
-	name = "OrbitPortal",
-	onDisplayChanged = function()
-		if addon.PortalBoot then
-			addon.PortalBoot.Apply()
-		end
-	end,
+local UI = addon.LibOrbitUI
+assert(UI.VERSION_MAJOR == 1 and UI.VERSION_MINOR >= 11, "Orbit Portal requires LibOrbitUI 1.11")
+local Services = UI.CreateContext({
+    owner = addon,
+    name = "OrbitPortal",
+    onDisplayChanged = function()
+        if addon.PortalBoot then
+            addon.PortalBoot.Apply()
+        end
+    end,
 })
 addon.PortalServices = Services
 
@@ -14,23 +16,23 @@ local lastOrientation = "LEFT"
 local SHADOW_OFFSET = 1
 
 function Services.DetectOrientation(frame)
-	lastOrientation = addon.LibOrbitUI.Geometry:DetectOrientation(frame, lastOrientation)
-	return lastOrientation
+    lastOrientation = addon.LibOrbitUI.Geometry:DetectOrientation(frame, lastOrientation)
+    return lastOrientation
 end
 
 Services.SetFont =
-	addon.LibOrbitUI.Text.CreateFontSetter(Services.pixel, "OrbitPortalFont", SHADOW_OFFSET, -SHADOW_OFFSET)
+    addon.LibOrbitUI.Text.CreateFontSetter(Services.pixel, "OrbitPortalFont", SHADOW_OFFSET, -SHADOW_OFFSET)
 
 function Services.GetFontPath()
-	return addon.PortalFonts.Path.UI
+    return addon.PortalFonts.Path.UI
 end
 
 function Services.GetSearchFontPath()
-	return addon.PortalFonts.Path.Chat
+    return addon.PortalFonts.Path.Chat
 end
 
 function Services.ApplyFontOverrides(region, overrides, size, path)
-	Services.SetFont(region, path, size, "OUTLINE")
+    Services.SetFont(region, path, size, "OUTLINE")
 end
 
 Services.ApplyTimerOverrides = Services.ApplyFontOverrides
@@ -38,5 +40,5 @@ Services.ApplyTimerOverrides = Services.ApplyFontOverrides
 Services.ApplyTextPosition = addon.LibOrbitUI.TextPosition.CreateSetter(Services.pixel)
 
 function Services.Message(message)
-	print("|cff80bfffOrbit Portal:|r " .. message)
+    print("|cff80bfffOrbit Portal:|r " .. message)
 end

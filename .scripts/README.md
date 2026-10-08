@@ -9,7 +9,7 @@ Prevent invalid runtime bundles or broken ownership contracts from reaching auto
 ## Implementation
 `check-package.py` walks the TOC/XML closure, compiles Lua 5.1 without executing it, checks distinct positive Interface
 versions including 120100 and the standalone SavedVariables declaration, then validates required art, audio,
-font/license assets, UI API 1.10, packaged mouse glyphs and the LibOrbitUI content manifest. Run with Python 3.12 and `lupa==2.8`; `--root` checks a
+font/license assets, UI API 1.11, packaged mouse glyphs and the LibOrbitUI content manifest. Run with Python 3.12 and `lupa==2.8`; `--root` checks a
 materialized package and `--release` rejects local library links. Version-list acceptance does not certify support
 for another client.
 
@@ -38,9 +38,9 @@ Development symlinks and junctions are always preserved.
 - Orbit-Libs is public. CI retains `ORBIT_PAT` through `gh auth setup-git`; local fetches use the configured Git
   credential helper. The existing credential policy skips validation for fork/Dependabot pull requests; trusted
   validation remains required before publication.
-- The content manifest includes the embedded library license as an asset, separately from executable TOC/XML entries.
-  Pin updates must refresh the manifest through the workspace's `Orbit/.scripts/package-orbit-ui.py` against matching
-  canonical source.
+- The content manifest includes the embedded library license separately from executable TOC/XML entries. The current
+  pin and manifest select published UI 1.10/API 1.14 bytes; settings require API 1.11. Refresh the manifest through `Orbit/.scripts/package-orbit-ui.py` in the workspace
+  only against that matching released source. The automatic latest-published-release resolver is not implemented.
 - Subdirectory archives do not inherit repository-root attributes. The fetcher disables Git's host newline conversion
   so Windows and Linux materialize the same committed bytes.
 

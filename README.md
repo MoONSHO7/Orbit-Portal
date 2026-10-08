@@ -34,10 +34,11 @@ and `status` names the active settings provider.
   to it during development. `Orbit/.scripts/package-orbit-ui.py` verifies the link, generates localization and records
   content hashes; staged packages contain regular files. Never hand-edit `Localization/Generated.lua`.
 - `.pkgmeta` pins the verified full commit SHA of
-  [LibOrbitUI release 1.8](https://github.com/MoONSHO7/Orbit-Libs/releases/tag/LibOrbitUI-1.8), which provides API 1.10,
+  [LibOrbitUI 1.10](https://github.com/MoONSHO7/Orbit-Libs/releases/tag/LibOrbitUI-1.10), which provides API 1.14,
   and selects `LibOrbitUI/LibOrbitUI-1.0`. `python .scripts/fetch-libs.py` materializes that runtime for clean-checkout
   validation while preserving development junctions, including with `--force`. GitHub packaging reads the same pin.
-  Portal has no color settings and embeds no ColorPicker dependency.
+  Settings require API 1.11; verify the published release, exact repin and matching manifest before delivery.
+  The automatic latest-published-release resolver is not implemented. Portal embeds no ColorPicker dependency.
 - Orbit-Libs is public. CI retains its `ORBIT_PAT` Git credential policy and skips the package check and runtime suite
   for fork and Dependabot pull requests and for branch pushes inside a fork or by Dependabot. Trusted validation runs
   before tagging and publishing.

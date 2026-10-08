@@ -17,8 +17,9 @@ frame `orbitNoSnap`, attaches `FramePersistence` and the orientation callback (r
 then restores the saved position. `Enable` applies OOC fade, registers standard and visibility events and Edit Mode
 callbacks (enter marks Edit Mode only when interaction is allowed, hides search and refreshes only when marked; exit
 requests a refresh); `Disable` unregisters the Edit Mode callbacks. `UpdateVisibility` adds profile suppression and
-mounted-hidden state through `OOCFadeService:SetLifecycleHidden`. `RenderSettings` feeds `PortalSchema` tabs to
-`SchemaBuilder` and `Engine.Config:Render`. `OrbitCanvas.lua` adds `frame:CreateCanvasPreview`, a fixed-size circular
+mounted-hidden state through `OOCFadeService:SetLifecycleHidden`. `RenderSettings` delegates tab selection to the host's
+`SchemaBuilder` and appends the selected `PortalSchema` controls after its tab selector for `Engine.Config:Render`.
+`OrbitCanvas.lua` adds `frame:CreateCanvasPreview`, a fixed-size circular
 icon preview with Timer, DungeonScore and DungeonShort text components and a draggable FavouriteStar, reading
 `ComponentPositions` and `IconSize`.
 

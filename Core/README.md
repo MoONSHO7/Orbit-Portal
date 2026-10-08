@@ -15,8 +15,9 @@ every protected write out of combat.
   the shared paint and search `state`, the frame and its `content` child, and the controller's refresh and hover entry
   points; Input and standalone movement attach their handles when installed. `Plugin.eventFrame` is created at file load
   so the gameplay owner exists before Orbit drives the hosted lifecycle.
-- **Services.** `PortalServices.lua` creates the private LibOrbitUI context (`pixel`, `runtime`, `tooltip`,
-  `tooltipHide`) with LibOrbitUI's default Orbit tooltip surface and bundled mouse hints, plus the standalone font, text-position and orientation owners; `onDisplayChanged` re-applies through
+- **Services.** `PortalServices.lua` requires LibOrbitUI API 1.11 before creating the private context (`pixel`, `runtime`,
+  `tooltip`, `tooltipHide`) with the default Orbit tooltip surface and bundled mouse hints, plus the standalone font,
+  text-position and orientation owners; `onDisplayChanged` re-applies through
   Boot. The Orbit bridge replaces those owners with Orbit's before `Portal.lua` loads. `PortalFonts.lua` picks the
   locale-specific Orbit UI and Orbit UI Chat binaries at file load.
 - **Lifecycle.** `OnLoad` creates `OrbitPortalFrame` (`SecureHandlerStateTemplate`, parented to `UIParent`) with its
