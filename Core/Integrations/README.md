@@ -11,7 +11,9 @@ Keep every Orbit reference in two files behind one frozen host contract, so the 
 `Orbit.lua` returns at file scope unless `Orbit.Engine` exists and `Orbit.ExternalUIHost.legacyPluginVersion == 1`; when
 it stays, `addon.PortalOrbit` exists and every later file selects the hosted path. `CreatePlugin` registers
 `Orbit-Portal` (system `Orbit_Portal`) with copied defaults, live toggle and declared Canvas components, and the file
-replaces `PortalServices`' font, override, text-position and orientation owners with Orbit's. It borrows `Orbit.Tooltip`
+replaces `PortalServices`' font, override, text-colour, text-position, orientation and component-state owners with
+Orbit's: positions and disabled keys come from the draft-aware `GetComponentPositions`/`IsComponentDisabled`, and text
+placement publishes a zero Canvas border inset on each parent. It borrows `Orbit.Tooltip`
 without changing Portal's native anchors, retaining the host's current tooltip appearance. `AttachFrame` marks the
 frame `orbitNoSnap`, attaches `FramePersistence` and the orientation callback (refresh, and re-anchor while dragging),
 then restores the saved position. `Enable` applies OOC fade, registers standard and visibility events and Edit Mode
@@ -20,16 +22,17 @@ requests a refresh); `Disable` unregisters the Edit Mode callbacks. `UpdateVisib
 mounted-hidden state through `OOCFadeService:SetLifecycleHidden`. `RenderSettings` delegates tab selection to the host's
 `SchemaBuilder` and appends the selected `PortalSchema` controls after its tab selector for `Engine.Config:Render`.
 `OrbitCanvas.lua` adds `frame:CreateCanvasPreview`, a fixed-size circular
-icon preview with Timer, DungeonScore and DungeonShort text components and a draggable FavouriteStar, reading
-`ComponentPositions` and `IconSize`.
+icon preview with Timer, DungeonScore and DungeonShort text components and a draggable FavouriteStar, reading the open
+draft and `IconSize`; its text uses live's default size and colours (score tier, theme Timer colour).
 
 ## Gotchas
 - The bridge is chosen at load, before `PLAYER_LOGIN`: `## OptionalDeps: Orbit` guarantees order, and an Orbit without
   the marker (or with another version) leaves Portal standalone. Hosted Portal never hydrates `OrbitPortalDB`.
 - Orbit's lifecycle owner is the plugin: Edit Mode callbacks register with it, and `Orbit:LiveTogglePlugin` drives
   `OnEnable`/`OnDisable`.
-- The Canvas preview duplicates the icon's mask, texcoords and border geometry; change `../View/PortalIcon.lua` and
-  this preview together.
+- The Canvas preview duplicates the icon's mask, texcoords, border geometry and text defaults; change
+  `../View/PortalIcon.lua`, `../PortalCanvas.lua` and this preview together. Portal's ring sits outside the icon, so
+  both surfaces place INSET records with a zero inset; without the published inset, live fell back to the theme border.
 - The host contract is legacy plugin v1: Orbit keeps the settings, and no external store transaction or export exists.
 
 ## References

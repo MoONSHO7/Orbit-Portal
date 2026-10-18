@@ -1,7 +1,9 @@
 local _, addon = ...
 local Services = addon.PortalServices
+local Pixel = Services.pixel
 
 -- [ CONSTANTS ] -------------------------------------------------------------------------------------------------------
+local COMPONENT_KEYS = { "DungeonScore", "DungeonShort", "FavouriteStar", "Timer" }
 local DEFAULT_FONT_SIZE = 10
 local DEFAULT_COOLDOWN_SIZE = 12
 local DUNGEON_SCORE_DEFAULT_OY = -2
@@ -65,12 +67,19 @@ local function EnsureDungeonScoreCached(challengeModeID, mythicPlusCache)
 end
 
 local function BuildDisabledSet(plugin)
-    local disabledList = plugin:GetSetting(1, "DisabledComponents") or {}
     local disabled = {}
-    for _, k in ipairs(disabledList) do
-        disabled[k] = true
+    for _, key in ipairs(COMPONENT_KEYS) do
+        disabled[key] = Services.IsComponentDisabled(plugin, key)
     end
     return disabled
+end
+
+local function ResolveScale(pos)
+    local scale = pos and pos.overrides and pos.overrides.Scale
+    if type(scale) == "number" and scale > 0 then
+        return scale
+    end
+    return 1
 end
 
 -- [ PER-COMPONENT APPLIERS ] ------------------------------------------------------------------------------------------
@@ -89,7 +98,9 @@ local function ApplyDungeonScore(icon, data, pos, disabled, cache, fontPath)
     local overrides = pos and pos.overrides or {}
     Services.ApplyFontOverrides(icon.DungeonScore, overrides, DEFAULT_FONT_SIZE, fontPath)
     icon.DungeonScore:SetText(tostring(math_floor(score)))
-    icon.DungeonScore:SetTextColor(GetDungeonScoreColor(score))
+    if not Services.ApplyTextColorOverride(icon.DungeonScore, overrides) then
+        icon.DungeonScore:SetTextColor(GetDungeonScoreColor(score))
+    end
     ApplyTextPosition(icon.DungeonScore, icon.DungeonScoreOverlay, pos, "CENTER", 0, DUNGEON_SCORE_DEFAULT_OY)
     icon.DungeonScore:Show()
 end
@@ -103,7 +114,9 @@ local function ApplyDungeonShort(icon, data, pos, disabled, fontPath)
     local overrides = pos and pos.overrides or {}
     Services.ApplyFontOverrides(icon.DungeonShort, overrides, DEFAULT_FONT_SIZE, fontPath)
     icon.DungeonShort:SetText(data.short)
-    icon.DungeonShort:SetTextColor(1, 1, 1)
+    if not Services.ApplyTextColorOverride(icon.DungeonShort, overrides) then
+        icon.DungeonShort:SetTextColor(1, 1, 1)
+    end
     ApplyTextPosition(icon.DungeonShort, icon.DungeonScoreOverlay, pos, "CENTER", 0, DUNGEON_SHORT_DEFAULT_OY)
     icon.DungeonShort:Show()
 end
@@ -139,9 +152,15 @@ local function ApplyFavouriteStar(icon, pos, disabled, isFavourite)
         icon.FavouriteStarShadow:Hide()
         return
     end
+    local scale = ResolveScale(pos)
+    local pixelScale = icon:GetEffectiveScale()
+    local starSize = Pixel:Snap(icon.favouriteStarBaseSize * scale, pixelScale)
+    local shadowSize = Pixel:Snap(icon.favouriteStarShadowBaseSize * scale, pixelScale)
+    icon.FavouriteStar:SetSize(starSize, starSize)
+    icon.FavouriteStarShadow:SetSize(shadowSize, shadowSize)
     ApplyTextPosition(icon.FavouriteStar, icon, pos, "TOPRIGHT", STAR_DEFAULT_OX, STAR_DEFAULT_OY)
     icon.FavouriteStarShadow:ClearAllPoints()
-    icon.FavouriteStarShadow:SetPoint("CENTER", icon.FavouriteStar, "CENTER", 0, STAR_SHADOW_Y_OFFSET)
+    icon.FavouriteStarShadow:SetPoint("CENTER", icon.FavouriteStar, "CENTER", 0, STAR_SHADOW_Y_OFFSET * scale)
     icon.FavouriteStar:Show()
     icon.FavouriteStarShadow:Show()
 end
@@ -158,6 +177,7 @@ function Canvas.ApplyIconComponents(icon, data, mythicPlusCache, isFavourite, pa
     ApplyFavouriteStar(icon, positions.FavouriteStar, disabled, isFavourite)
 end
 
+Canvas.DEFAULT_FONT_SIZE = DEFAULT_FONT_SIZE
 Canvas.BuildDisabledSet = BuildDisabledSet
 Canvas.GetGlobalFontPath = GetGlobalFontPath
 Canvas.GetDungeonScoreColor = GetDungeonScoreColor

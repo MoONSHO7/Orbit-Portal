@@ -5,6 +5,8 @@ if not Bridge then
 end
 local Orbit = Orbit
 local OrbitEngine = Orbit.Engine
+local Services = addon.PortalServices
+local Canvas = addon.PortalCanvas
 
 local ICON_TEXCOORD_MIN = 0.08
 local ICON_TEXCOORD_MAX = 0.92
@@ -15,6 +17,23 @@ local STAR_SIZE = 12
 local STAR_ATLAS = "transmog-icon-favorite"
 local BORDER_ATLAS_SEASONAL = "talents-node-choiceflyout-circle-red"
 local BORDER_ATLAS_DEFAULT = "talents-node-choiceflyout-circle-gray"
+local PREVIEW_DUNGEON_SCORE = 285
+
+local function SavedOverrides(positions, key)
+    return positions[key] and positions[key].overrides or {}
+end
+
+-- Live paints these colours after its overrides, so the replicas repeat that order instead of keeping the source white.
+local function PaintPreviewTextColors(components, positions)
+    local score = components.DungeonScore
+    if score and not Services.ApplyTextColorOverride(score.visual, SavedOverrides(positions, "DungeonScore")) then
+        score.visual:SetTextColor(Canvas.GetDungeonScoreColor(PREVIEW_DUNGEON_SCORE))
+    end
+    local timer = components.Timer
+    if timer then
+        OrbitEngine.OverrideUtils.ApplyTextColor(timer.visual, SavedOverrides(positions, "Timer"))
+    end
+end
 
 function Bridge.AttachCanvas(ctx)
     local frame, Plugin, state = ctx.frame, ctx.plugin, ctx.state
@@ -97,8 +116,8 @@ function Bridge.AttachCanvas(ctx)
             return currentSize, currentSize, currentScale
         end
 
-        local savedPositions = Plugin:GetSetting(1, "ComponentPositions") or {}
-        local fontPath = addon.PortalCanvas.GetGlobalFontPath()
+        local savedPositions = Services.GetComponentPositions(Plugin)
+        local fontPath = Canvas.GetGlobalFontPath()
 
         OrbitEngine.IconCanvasPreview:AttachTextComponents(preview, {
             {
@@ -111,11 +130,12 @@ function Bridge.AttachCanvas(ctx)
             },
             {
                 key = "DungeonScore",
-                preview = "285",
+                preview = tostring(PREVIEW_DUNGEON_SCORE),
                 anchorX = "CENTER",
                 anchorY = "BOTTOM",
                 offsetX = 0,
                 offsetY = -2,
+                fontSize = Canvas.DEFAULT_FONT_SIZE,
             },
             {
                 key = "DungeonShort",
@@ -124,8 +144,10 @@ function Bridge.AttachCanvas(ctx)
                 anchorY = "TOP",
                 offsetX = 0,
                 offsetY = 2,
+                fontSize = Canvas.DEFAULT_FONT_SIZE,
             },
         }, savedPositions, fontPath)
+        PaintPreviewTextColors(preview.components, savedPositions)
 
         local CreateDraggableComponent = OrbitEngine.CanvasMode and OrbitEngine.CanvasMode.CreateDraggableComponent
         if CreateDraggableComponent then

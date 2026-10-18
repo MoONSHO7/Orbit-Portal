@@ -162,7 +162,7 @@ local function RepaintIcons()
         maxVisible = maxVisible,
         fadeAmount = Layout.ResolveFadeAmount(Plugin:GetSetting(1, "FadeEffect")),
         fontPath = Canvas.GetGlobalFontPath(),
-        positions = Plugin:GetSetting(1, "ComponentPositions") or {},
+        positions = Services.GetComponentPositions(Plugin),
         disabled = Canvas.BuildDisabledSet(Plugin),
     }
 

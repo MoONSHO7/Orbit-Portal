@@ -275,6 +275,64 @@ Check(
     firstIcon:GetAttribute("type1") == nil and firstIcon:GetAttribute("spell") == nil,
     "pending housing remains inert"
 )
+local paintedColors = {}
+for _, key in ipairs({ "DungeonScore", "DungeonShort" }) do
+    firstIcon[key].SetTextColor = function(_, r, g, b)
+        paintedColors[key] = { r, g, b }
+    end
+end
+local scoreOverrides = { CustomColorCurve = { pins = {} } }
+addon.PortalCanvas.ApplyIconComponents(
+    firstIcon,
+    { category = "SEASONAL_DUNGEON", challengeModeID = 501, short = "AA" },
+    {},
+    true,
+    {
+        fontPath = STANDARD_TEXT_FONT,
+        disabled = {},
+        positions = {
+            DungeonScore = {
+                anchorX = "CENTER",
+                anchorY = "BOTTOM",
+                offsetX = 0,
+                offsetY = -2,
+                overrides = scoreOverrides,
+            },
+            DungeonShort = { anchorX = "CENTER", anchorY = "TOP", offsetX = 0, offsetY = 2 },
+            FavouriteStar = { anchorX = "RIGHT", anchorY = "TOP", offsetX = 1, offsetY = 1, overrides = { Scale = 2 } },
+        },
+    }
+)
+local pixelScale = firstIcon:GetEffectiveScale()
+Check(
+    firstIcon.FavouriteStar:GetWidth()
+            == addon.PortalServices.pixel:Snap(firstIcon.favouriteStarBaseSize * 2, pixelScale)
+        and firstIcon.FavouriteStarShadow:GetWidth()
+            == addon.PortalServices.pixel:Snap(firstIcon.favouriteStarShadowBaseSize * 2, pixelScale),
+    "favourite star Scale override resizes the star and its shadow"
+)
+Check(paintedColors.DungeonShort and paintedColors.DungeonShort[1] == 1, "DungeonShort stays white without a colour")
+if scenario == "legacy" then
+    Check(
+        firstIcon.DungeonScore.hostTextColorOverrides == scoreOverrides and paintedColors.DungeonScore == nil,
+        "hosted score colour override replaces the tier colour"
+    )
+    Check(
+        firstIcon.hostCanvasBorderInset == 0 and firstIcon.DungeonScoreOverlay.hostCanvasBorderInset == 0,
+        "hosted text parents publish the zero inset the Canvas preview uses"
+    )
+    hostDraftPositions, hostDraftDisabled = { Timer = { anchorX = "LEFT", anchorY = "TOP" } }, { "FavouriteStar" }
+    Check(
+        addon.PortalServices.GetComponentPositions(Plugin) == hostDraftPositions
+            and addon.PortalCanvas.BuildDisabledSet(Plugin).FavouriteStar,
+        "hosted paint reads the open Canvas draft"
+    )
+    hostDraftPositions, hostDraftDisabled = nil, nil
+else
+    local r, g, b = addon.PortalCanvas.GetDungeonScoreColor(123)
+    local painted = paintedColors.DungeonScore
+    Check(painted[1] == r and painted[2] == g and painted[3] == b, "standalone score keeps its tier colour")
+end
 SetCombat(true)
 Check(not Plugin.frame.shown, "native combat driver hides root")
 addon.LibOrbitUI.Config.CommitValue(OrbitPortalSettings.spec, control, false)

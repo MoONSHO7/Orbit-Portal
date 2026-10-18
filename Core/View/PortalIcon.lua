@@ -159,11 +159,13 @@ function Icon.Create(ctx)
     icon.FavouriteStarShadow:SetVertexColor(0, 0, 0, STAR_SHADOW_ALPHA)
     icon.FavouriteStarShadow:SetSize(STAR_SHADOW_SIZE, STAR_SHADOW_SIZE)
     icon.FavouriteStarShadow:Hide()
+    icon.favouriteStarShadowBaseSize = STAR_SHADOW_SIZE
 
     icon.FavouriteStar = icon:CreateTexture(nil, "OVERLAY", nil, 7)
     icon.FavouriteStar:SetAtlas(STAR_ATLAS)
     icon.FavouriteStar:SetSize(STAR_SIZE, STAR_SIZE)
     icon.FavouriteStar:Hide()
+    icon.favouriteStarBaseSize = STAR_SIZE
 
     icon.DungeonScoreOverlay = CreateFrame("Frame", nil, icon)
     icon.DungeonScoreOverlay:SetAllPoints()

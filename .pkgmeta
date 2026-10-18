@@ -1,5 +1,9 @@
 package-as: Orbit_Portal
 
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
 externals:
   # LibOrbitUI release 1.10 provides API 1.14; pin its verified release commit.
   Libs/LibOrbitUI-1.0:

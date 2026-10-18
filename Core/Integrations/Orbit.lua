@@ -46,7 +46,24 @@ function Services.ApplyTimerOverrides(region, overrides, size, path)
 end
 
 function Services.ApplyTextPosition(region, parent, position, anchor, x, y)
+    -- The ring sits outside the icon, so INSET records measure from the icon edge exactly as the Canvas preview does.
+    Orbit.Skin:SetCanvasBorderInset(parent, 0)
     Engine.PositionUtils.ApplyTextPosition(region, parent, position, anchor, x, y)
+end
+
+function Services.ApplyTextColorOverride(region, overrides)
+    if overrides.CustomColorCurve or overrides.UseClassColour or overrides.CustomColorValue then
+        return Engine.OverrideUtils.ApplyTextColor(region, overrides)
+    end
+    return false
+end
+
+function Services.GetComponentPositions(plugin)
+    return plugin:GetComponentPositions(1)
+end
+
+function Services.IsComponentDisabled(plugin, key)
+    return plugin:IsComponentDisabled(key)
 end
 
 function Services.SetFont(region, path, size, flags)

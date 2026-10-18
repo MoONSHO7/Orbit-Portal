@@ -39,6 +39,23 @@ Services.ApplyTimerOverrides = Services.ApplyFontOverrides
 
 Services.ApplyTextPosition = addon.LibOrbitUI.TextPosition.CreateSetter(Services.pixel)
 
+function Services.ApplyTextColorOverride()
+    return false
+end
+
+function Services.GetComponentPositions(plugin)
+    return plugin:GetSetting(1, "ComponentPositions") or {}
+end
+
+function Services.IsComponentDisabled(plugin, key)
+    for _, disabled in ipairs(plugin:GetSetting(1, "DisabledComponents") or {}) do
+        if disabled == key then
+            return true
+        end
+    end
+    return false
+end
+
 function Services.Message(message)
     print("|cff80bfffOrbit Portal:|r " .. message)
 end

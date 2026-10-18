@@ -21,7 +21,9 @@ policy keeps `GH_TOKEN` available during dependency fetching and packaging. Rele
 repository token and CurseForge credentials.
 
 Packaging uses `-u` to preserve LF text bytes, keeping the final embedded files consistent with the checked content
-manifest.
+manifest. `.pkgmeta` selects the full repository `CHANGELOG.md` as a manual Markdown changelog for CurseForge's file
+changelog and GitHub's release body. The source file remains available for upload even when Markdown is excluded from
+the runtime ZIP.
 
 ## Gotchas
 - Fork and Dependabot pull requests receive an explicit notice instead of the credentialed jobs, and branch pushes

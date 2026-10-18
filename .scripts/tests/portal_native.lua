@@ -741,7 +741,14 @@ if scenario == "legacy" then
         },
         FramePersistence = { AttachSettingsListener = function() end, RestorePosition = function() end },
         PositionUtils = { ApplyTextPosition = function() end },
-        OverrideUtils = { ApplyFontOverrides = function() end, ApplyOverrides = function() end },
+        OverrideUtils = {
+            ApplyFontOverrides = function() end,
+            ApplyOverrides = function() end,
+            ApplyTextColor = function(region, overrides)
+                region.hostTextColorOverrides = overrides
+                return true
+            end,
+        },
         EditMode = {
             RegisterCallbacks = function(_, callbacks, owner, lifecycleOwner)
                 hostCallbacks = callbacks
@@ -788,6 +795,9 @@ if scenario == "legacy" then
             SetFontWithShadow = function(_, region, path, size, flags)
                 region:SetFont(path, size, flags)
             end,
+            SetCanvasBorderInset = function(_, frame, size)
+                frame.hostCanvasBorderInset = size
+            end,
         },
         OOCFadeMixin = {
             ApplyOOCFade = function()
@@ -828,6 +838,17 @@ if scenario == "legacy" then
         end
         function plugin:SetSetting(_, key, value)
             hostValues[key] = value
+        end
+        function plugin:GetComponentPositions(index)
+            return hostDraftPositions or self:GetSetting(index, "ComponentPositions") or {}
+        end
+        function plugin:IsComponentDisabled(key)
+            for _, disabled in ipairs(hostDraftDisabled or self:GetSetting(1, "DisabledComponents") or {}) do
+                if disabled == key then
+                    return true
+                end
+            end
+            return false
         end
         function plugin:RegisterStandardEvents() end
         function plugin:RegisterVisibilityEvents() end
