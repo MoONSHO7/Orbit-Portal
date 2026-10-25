@@ -40,7 +40,7 @@ Development symlinks and junctions are always preserved.
   credential helper. The existing credential policy skips validation for fork/Dependabot pull requests; trusted
   validation remains required before publication.
 - The content manifest includes the embedded library license separately from executable TOC/XML entries. The current
-  pin and manifest select published UI 1.10/API 1.14 bytes; settings require API 1.11. Refresh the manifest through `Orbit/.scripts/package-orbit-ui.py` in the workspace
+  pin and manifest select published UI 1.14/API 1.17 bytes; settings require API 1.11. Refresh the manifest through `Orbit/.scripts/package-orbit-ui.py` in the workspace
   only against that matching released source. The automatic latest-published-release resolver is not implemented.
 - Subdirectory archives do not inherit repository-root attributes. The fetcher disables Git's host newline conversion
   so Windows and Linux materialize the same committed bytes.

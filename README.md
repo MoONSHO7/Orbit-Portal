@@ -34,7 +34,7 @@ and `status` names the active settings provider.
   to it during development. `Orbit/.scripts/package-orbit-ui.py` verifies the link, generates localization and records
   content hashes; staged packages contain regular files. Never hand-edit `Localization/Generated.lua`.
 - `.pkgmeta` pins the verified full commit SHA of
-  [LibOrbitUI 1.10](https://github.com/MoONSHO7/Orbit-Libs/releases/tag/LibOrbitUI-1.10), which provides API 1.14,
+  [LibOrbitUI 1.14](https://github.com/MoONSHO7/Orbit-Libs/releases/tag/LibOrbitUI-1.14), which provides API 1.17,
   and selects `LibOrbitUI/LibOrbitUI-1.0`. `python .scripts/fetch-libs.py` materializes that runtime for clean-checkout
   validation while preserving development junctions, including with `--force`. GitHub packaging reads the same pin.
   Settings require API 1.11; verify the published release, exact repin and matching manifest before delivery.
