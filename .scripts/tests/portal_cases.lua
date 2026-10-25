@@ -193,6 +193,54 @@ Check(
     "Portal category checkbox uses native left-aligned label"
 )
 OrbitPortalSettings:SelectTab("layout")
+local settingsInput
+for _, frame in ipairs(frames) do
+    if frame.template == "InsecureKeyboardInputPropagatorTemplate" then
+        Check(settingsInput == nil, "settings retain one Escape input proxy")
+        settingsInput = frame
+    end
+end
+Check(
+    settingsInput and settingsInput:GetParent() == UIParent and settingsInput.point == nil,
+    "settings Escape input stays outside the window ancestry"
+)
+Check(
+    settingsInput:IsVisible() and settingsInput.keyboard and settingsInput.propagate,
+    "shown settings arm a propagating keyboard proxy"
+)
+Check(not OrbitPortalSettings.keyboard and #UISpecialFrames == 0, "settings leave native keyboard ownership intact")
+local function SettingsKey(key)
+    if not settingsInput:IsVisible() or not settingsInput.keyboard then
+        return true
+    end
+    settingsInput:GetScript("OnKeyDown")(settingsInput, key)
+    return settingsInput.propagate
+end
+Check(SettingsKey("K") and OrbitPortalSettings:IsShown(), "ordinary settings keys propagate")
+local settingsLevel, settingsStrata = OrbitPortalSettings:GetFrameLevel(), OrbitPortalSettings:GetFrameStrata()
+OrbitPortalSettings:Raise()
+OrbitPortalSettings:SetFrameLevel(settingsLevel + 10)
+OrbitPortalSettings:SetFrameStrata("HIGH")
+Check(
+    settingsInput:GetFrameLevel() == OrbitPortalSettings:GetFrameLevel() + 1
+        and settingsInput:GetFrameStrata() == "HIGH",
+    "settings input follows window depth changes"
+)
+OrbitPortalSettings:Lower()
+OrbitPortalSettings:SetFrameLevel(settingsLevel)
+OrbitPortalSettings:SetFrameStrata(settingsStrata)
+Check(not SettingsKey("ESCAPE"), "settings consume Escape")
+Check(
+    not OrbitPortalSettings:IsShown() and not settingsInput:IsShown() and #OrbitPortalSettings.controls == 0,
+    "Escape closes settings and releases their controls and input"
+)
+FlushTimers()
+Check(not settingsInput:IsShown() and SettingsKey("ESCAPE"), "deferred restoration cannot reopen closed settings")
+Boot.ShowSettings()
+Check(
+    OrbitPortalSettings:IsShown() and settingsInput:IsVisible() and settingsInput.propagate,
+    "reopening settings restores input propagation"
+)
 local control = OrbitPortalSettings.spec.tabs[1].controls[1]
 addon.LibOrbitUI.Config.CommitValue(OrbitPortalSettings.spec, control, false)
 Check(not Plugin._portalActive, "dialog enablement disables product")
@@ -334,10 +382,12 @@ else
     Check(painted[1] == r and painted[2] == g and painted[3] == b, "standalone score keeps its tier colour")
 end
 SetCombat(true)
+Check(not OrbitPortalSettings:IsShown() and not settingsInput:IsShown(), "combat releases settings keyboard input")
 Check(not Plugin.frame.shown, "native combat driver hides root")
 addon.LibOrbitUI.Config.CommitValue(OrbitPortalSettings.spec, control, false)
 Check(not Plugin._portalActive and Plugin.frame:GetAlpha() == 0, "combat disable releases product immediately")
 SetCombat(false)
+Check(not settingsInput:IsShown(), "combat exit does not reopen settings input")
 Check(Plugin.frame.driver == "hide" and not Plugin.frame.shown, "deferred hide completes after combat")
 addon.LibOrbitUI.Config.CommitValue(OrbitPortalSettings.spec, control, true)
 FlushTimers()

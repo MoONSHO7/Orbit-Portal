@@ -46,6 +46,22 @@ function Mixin(target, source)
     end
     return target
 end
+local function Pack(...)
+    return { n = select("#", ...), ... }
+end
+function hooksecurefunc(target, method, callback)
+    if type(target) == "string" then
+        target, method, callback = _G, target, method
+    end
+    local original = target[method]
+    assert(type(original) == "function", "hooksecurefunc: missing function " .. tostring(method))
+    assert(type(callback) == "function", "hooksecurefunc: missing callback")
+    target[method] = function(...)
+        local results = Pack(original(...))
+        callback(...)
+        return unpack(results, 1, results.n)
+    end
+end
 function issecretvalue(value)
     return value == "SECRET"
 end
@@ -386,10 +402,26 @@ function Frame:GetAlpha()
     return self.alpha
 end
 function Frame:SetFrameLevel(value)
+    CheckProtected(self)
     self.level = value
 end
 function Frame:GetFrameLevel()
     return self.level
+end
+function Frame:SetFrameStrata(value)
+    CheckProtected(self)
+    self.strata = value
+end
+function Frame:GetFrameStrata()
+    return self.strata
+end
+function Frame:Raise()
+    CheckProtected(self)
+    self.raised = true
+end
+function Frame:Lower()
+    CheckProtected(self)
+    self.raised = false
 end
 function Frame:SetAttribute(key, value)
     CheckProtected(self)
@@ -558,7 +590,6 @@ end
 for _, name in ipairs({
     "SetClampedToScreen",
     "SetToplevel",
-    "SetFrameStrata",
     "SetMovable",
     "SetClampRectInsets",
     "SetHitRectInsets",
@@ -628,6 +659,9 @@ function CreateFrame(kind, name, parent, template)
         left = 0,
         bottom = 0,
         level = 1,
+        strata = parent and parent:GetFrameStrata() or "MEDIUM",
+        propagate = template == "InsecureKeyboardInputPropagatorTemplate",
+        propagateMouseClicks = template == "InsecureMouseClicksPropagatorTemplate",
         alpha = 1,
         shown = true,
         scripts = {},

@@ -17,6 +17,7 @@ for another client.
 double, and runs `tests/portal_cases.lua` once per scenario: standalone, disabled, combat-blocked, future and corrupt
 stores, the legacy Orbit host, an unmarked host, injected constructor and movement failures, and `noatlas`, where the
 settings shell's `housing-basic-container` lookup fails and the shared backdrop colour must take over.
+Settings cases cover Escape propagation, proxy depth, close/reopen cleanup and combat suspension.
 `tests/portal_scanner_cases.lua` then covers identity, ownership and native toy usability per class/race fixture, and a
 final pass proves every `L.` key Core references exists in all nine locales. Pass `--scanner-only` to isolate the
 scanner cases. The reusable `.github/workflows/validate.yml` runs the package check and this suite as separate jobs
