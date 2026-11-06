@@ -1,5 +1,6 @@
 local _, addon = ...
 local Services = addon.PortalServices
+local IconWindow = addon.PortalIconWindow
 
 local ipairs = ipairs
 local table_sort = table.sort
@@ -57,9 +58,7 @@ local function ApplyFilter(items)
 	else
 		return
 	end
-	if installedCtx.RepaintIcons then
-		installedCtx.RepaintIcons()
-	end
+	IconWindow.Repaint(installedCtx)
 end
 
 -- [ SEARCH DISPLAY ] --------------------------------------------------------------------------------------------------
@@ -179,7 +178,7 @@ function Navigation.Install(ctx)
 		if filter and #filter > 0 then
 			KeepSearchAlive()
 			state.scrollOffset = (state.scrollOffset - delta) % #filter
-			ctx.RepaintIcons()
+			IconWindow.Repaint(ctx)
 			return
 		end
 		local portalList = state.portalList
@@ -220,7 +219,7 @@ function Navigation.Install(ctx)
 			state.scrollOffset = (state.scrollOffset - delta) % totalIcons
 		end
 
-		ctx.RepaintIcons()
+		IconWindow.Repaint(ctx)
 	end
 
 	local function PageResults()
@@ -228,7 +227,7 @@ function Navigation.Install(ctx)
 		local filter = state.searchFilter
 		if filter and #filter > 0 then
 			state.scrollOffset = (state.scrollOffset + 1) % #filter
-			ctx.RepaintIcons()
+			IconWindow.Repaint(ctx)
 		end
 	end
 

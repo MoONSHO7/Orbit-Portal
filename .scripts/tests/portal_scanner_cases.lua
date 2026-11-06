@@ -94,8 +94,8 @@ end
 
 local function CheckIdentityRestrictions()
     MakeRestrictedItemsAvailable()
-    local hearthstones = Scanner:ScanHearthstones()
-    local toys = Scanner:ScanToys()
+    local discovered = Scanner:ScanAll()
+    local hearthstones, toys = discovered.HEARTHSTONE, discovered.TOY
 
     if scenario == "scanner_human_mage" then
         Check(not HearthstonePoolContains(hearthstones, 210455), "Human cannot use Draenic Hologem")
@@ -124,14 +124,14 @@ local function CheckIdentityRestrictions()
         Check(ResultsContain(toys, 168862), "Gnome can use G.E.A.R. beacon")
 
         state.itemCounts[139590] = 0
-        toys = Scanner:ScanToys()
+        toys = Scanner:ScanAll().TOY
         Check(not ResultsContain(toys, 139590), "missing Ravenholdt scroll is excluded")
         Check(ResultsContain(toys, 168862), "one missing item does not suppress another")
 
         state.itemCounts[139590] = 1
         state.itemCounts[168862] = 0
         state.equippedItems[50287] = true
-        toys = Scanner:ScanToys()
+        toys = Scanner:ScanAll().TOY
         Check(ResultsContain(toys, 139590), "owned Ravenholdt scroll returns")
         Check(not ResultsContain(toys, 168862), "missing G.E.A.R. beacon is excluded")
         Check(ResultsContain(toys, 50287), "equipped teleport gear remains available")
@@ -140,11 +140,11 @@ end
 
 local function CheckEngineeringRequirements()
     state.itemCounts[167075] = 1
-    local results = Scanner:ScanEngineeringSpells()
+    local results = Scanner:ScanAll().ENGINEER
     Check(ResultsContain(results, 167075), "Mechagon transporter works without Engineering")
 
     state.itemCounts[167075] = 0
-    results = Scanner:ScanEngineeringSpells()
+    results = Scanner:ScanAll().ENGINEER
     Check(not ResultsContain(results, 167075), "Mechagon transporter still requires ownership")
 
     local engineeringToys = {
@@ -165,17 +165,79 @@ local function CheckEngineeringRequirements()
     }
     for _, itemID in ipairs(engineeringToys) do
         state.ownedToys[itemID] = true
-        results = Scanner:ScanEngineeringSpells()
+        results = Scanner:ScanAll().ENGINEER
         Check(not ResultsContain(results, itemID), "native-unusable Engineering toy is excluded: " .. itemID)
         state.usableToys[itemID] = true
-        results = Scanner:ScanEngineeringSpells()
+        results = Scanner:ScanAll().ENGINEER
         Check(ResultsContain(results, itemID), "native-usable Engineering toy is included: " .. itemID)
         state.usableToys[itemID] = false
     end
 end
 
+local function CheckHousingSource()
+    local Housing = addon.PortalHousing
+    local savedHousing, savedUnitLevel = C_Housing, UnitLevel
+    local requests, level, tracked = 0, 79, nil
+    C_Housing = nil
+    Check(#Housing:Scan() == 0, "missing housing API yields no portal")
+    C_Housing = {
+        TeleportHome = function() end,
+        GetPlayerOwnedHouses = function()
+            requests = requests + 1
+        end,
+        GetTrackedHouseGuid = function()
+            return tracked
+        end,
+        GetVisitCooldownInfo = function()
+            return { startTime = GetTime() - 10, duration = 30 }
+        end,
+    }
+    UnitLevel = function()
+        return level
+    end
+    Housing:RequestOwnedHouses()
+    Check(requests == 1 and #Housing:Scan() == 0, "housing request alone does not admit a portal")
+    level = 80
+    Check(Housing:Scan()[1].name == addon.L.PLU_PORTAL_HOUSING_TELEPORT, "level 80 keeps the generic housing entry")
+    tracked = "tracked"
+    Check(Housing:Scan()[1].name == addon.L.PLU_PORTAL_HOUSING_MY_PLOT, "tracked home supplies the fallback name")
+    local owned = { houseName = "Home", neighborhoodName = "District" }
+    Housing:SetOwnedHouses({ owned })
+    local entry = Scanner:ScanAll().HOUSING[1]
+    Check(entry.houseInfo == owned and entry.name == "Home" and entry.instanceName == "District", "owned home wins")
+    Check(entry.cooldown == 20 and entry.cooldownDuration == 30, "housing reads visit cooldown")
+    tracked, level = nil, 79
+    Housing:SetOwnedHouses({})
+    Check(#Housing:Scan() == 0, "empty response clears the prior owned home")
+    C_Housing, UnitLevel = savedHousing, savedUnitLevel
+end
+
+local function CheckDisplayList()
+    local settings = { Favorites = { ["1"] = true, ["2"] = true }, EnabledCategories = { CLASS = false } }
+    settings.HideLongCooldowns = true
+    local plugin = {
+        GetSetting = function(_, _, key)
+            return settings[key]
+        end,
+    }
+    local a = { spellID = 4, category = "TOY", name = "Zebra Toy", short = "ZT", instanceName = "Test Zone" }
+    local b = { spellID = 5, category = "TOY", name = "Alpha Toy", cooldown = 1799 }
+    local favorite = { spellID = 1, category = "CLASS", name = "Favorite" }
+    local cooling = { spellID = 2, category = "CLASS", cooldown = 1800 }
+    local seasonal = { spellID = 6, category = "SEASONAL_DUNGEON", cooldown = 1800 }
+    local disabled = { spellID = 7, category = "CLASS" }
+    local entries, starts = addon.PortalViewList.Build(plugin, { a, cooling, b, disabled, seasonal, favorite })
+    Check(#entries == 4 and entries[1] == favorite and entries[2] == seasonal, "filter before category ordering")
+    Check(entries[3] == a and entries[4] == b, "same-category scan order is stable")
+    Check(starts.FAVORITE == 1 and starts.SEASONAL_DUNGEON == 2 and starts.TOY == 3, "category jumps index the list")
+    Check(a.searchShort == "zt" and a.searchName == "zebra toy" and a.searchInst == "test zone", "search keys")
+    Check(favorite.searchCategory == PD.CategoryNames.CLASS:lower(), "favorites keep original category search text")
+end
+
 if scenario == "scanner_human_mage" then
     CheckDataContracts()
+    CheckHousingSource()
+    CheckDisplayList()
 end
 if scenario == "scanner_engineer" then
     CheckEngineeringRequirements()

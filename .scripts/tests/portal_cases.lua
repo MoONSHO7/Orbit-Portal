@@ -7,8 +7,6 @@ local originalStore = OrbitPortalDB
 addon.PortalScanner.GetOrderedList = function()
     return { { type = "spell", spellID = 123, name = "Fixture Portal", category = "CLASS", icon = 134400 } }
 end
-addon.PortalScanner.RequestHousingData = function() end
-addon.PortalScanner.RefreshCooldowns = function() end
 if scenario == "loaderror" or scenario == "movementerror" then
     allowedErrors = 1
     if scenario == "loaderror" then
@@ -72,6 +70,25 @@ FlushTimers()
 Check(Plugin._portalActive and Plugin.frame and #ctx.state.visibleIcons == 1, "initial frame painted")
 Check(frameCreations == 1 and mapRequests == 1, "one constructor")
 local firstIcon = ctx.state.visibleIcons[1]
+if scenario == "standalone" or scenario == "legacy" then
+    local scan = addon.PortalScanner.GetOrderedList
+    addon.PortalScanner.GetOrderedList = function()
+        return {
+            { type = "spell", spellID = 123, name = "First Portal", category = "CLASS", icon = 134400 },
+            { type = "spell", spellID = 456, name = "Second Portal", category = "CLASS", icon = 134400 },
+        }
+    end
+    ctx.Refresh()
+    Check(#ctx.state.visibleIcons == 2, "refresh paints both portals")
+    ctx.HandleWheel(ctx.frame, -1)
+    Check(
+        ctx.state.visibleIcons[1] == firstIcon and firstIcon:GetAttribute("spell") == 456,
+        "wheel repaints pooled icons"
+    )
+    addon.PortalScanner.GetOrderedList = scan
+    ctx.state.scrollOffset = 0
+    ctx.Refresh()
+end
 Check(firstIcon:GetAttribute("type1") == "spell" and firstIcon:GetAttribute("spell") == 123, "secure spell configured")
 firstIcon.scripts.PreClick(firstIcon, "RightButton", true)
 firstIcon.scripts.PreClick(firstIcon, "RightButton", false)
@@ -257,13 +274,45 @@ Check(
     "toggle cycles retain singleton and pooled objects"
 )
 Check(ctx.state.visibleIcons[1] == firstIcon, "icons reused across toggle cycles")
-local activeTickers = 0
+local activeTicker
 for _, timer in ipairs(timers) do
     if timer.ticker and not timer.cancelled then
-        activeTickers = activeTickers + 1
+        Check(not activeTicker, "duplicate feature ticker after repeated toggles")
+        activeTicker = timer
     end
 end
-Check(activeTickers == 1, "only one live feature ticker after repeated toggles")
+Check(activeTicker and activeTicker.delay == 15, "only one live feature ticker at the original cadence")
+
+local readSpellCooldown, repaint = C_Spell.GetSpellCooldown, addon.PortalIconWindow.Repaint
+local cooldownStart = now - 5
+local reads, paints = 0, 0
+C_Spell.GetSpellCooldown = function(spellID)
+    Check(spellID == 123, "ticker reads the displayed spell")
+    reads = reads + 1
+    return { startTime = cooldownStart, duration = 20 }
+end
+addon.PortalIconWindow.Repaint = function(context)
+    paints = paints + 1
+    repaint(context)
+end
+local entry = ctx.state.portalList[1]
+activeTicker.callback()
+Check(
+    ctx.state.portalList[1] == entry and entry.cooldown == 15 and entry.cooldownDuration == 20,
+    "tick updates in place"
+)
+Check(reads == 1 and paints == 1, "one read and repaint for the active cooldown")
+cooldownStart = "SECRET"
+activeTicker.callback()
+Check(entry.cooldown == 0 and entry.cooldownDuration == 0 and paints == 2, "restricted data clears the cooldown once")
+activeTicker.callback()
+Check(reads == 3 and paints == 2, "idle ticks leave the display alone")
+combat = true
+activeTicker.callback()
+Check(reads == 3 and paints == 2, "combat blocks cooldown reads and repaints")
+combat = false
+C_Spell.GetSpellCooldown, addon.PortalIconWindow.Repaint = readSpellCooldown, repaint
+
 if scenario == "legacy" then
     Check(
         addon.PortalServices.GetSearchFontPath() == "Fixture\\Orbit UI Chat"

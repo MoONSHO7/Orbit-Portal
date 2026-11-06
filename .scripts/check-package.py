@@ -31,7 +31,9 @@ ASSETS = (
 )
 LIBRARY_ASSETS = {"Libs/LibOrbitUI-1.0/LICENSE",
                   *(f"Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-click-{button}.tga"
-                    for button in ("left", "middle", "right"))}
+                    for button in ("left", "middle", "right")),
+                  *(f"Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-key-{key}.tga"
+                    for key in ("shift", "control", "alt"))}
 
 
 def validate(root, release=False):

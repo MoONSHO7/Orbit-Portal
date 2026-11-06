@@ -3,12 +3,12 @@ local _, addon = ...
 local Services = addon.PortalServices
 local Pixel = Services.pixel
 local Bridge = addon.PortalOrbit
+local Housing = addon.PortalHousing
+local Cooldowns = addon.PortalCooldowns
+local ViewList = addon.PortalViewList
+local IconWindow = addon.PortalIconWindow
 
-local math_max = math.max
-local math_min = math.min
-local math_floor = math.floor
 local ipairs = ipairs
-local wipe = wipe
 local InCombatLockdown = InCombatLockdown
 
 -- [ PLUGIN REGISTRATION ] ---------------------------------------------------------------------------------------------
@@ -44,9 +44,6 @@ local FRAME_LEVEL = 100
 local FRAME_STRATA = "MEDIUM"
 local INITIAL_SCAN_DELAY = 2
 
-local LONG_COOLDOWN_THRESHOLD = 1800
-local CLAMP_VISIBLE_MARGIN = 30
-local FRAME_THICKNESS_PAD = 2
 local COOLDOWN_REFRESH_INTERVAL = 15
 local REFRESH_DEBOUNCE = 0.1
 local EVENTS = {
@@ -71,8 +68,6 @@ local VISIBILITY_DRIVER = "[combat][petbattle][vehicleui] hide; show"
 
 -- [ STATE ] -----------------------------------------------------------------------------------------------------------
 local frame
-local iconPool
-local currentOrientation = "LEFT"
 local runtimeStartPending, refreshPending = false, false
 local hadActiveCooldowns = false
 
@@ -92,143 +87,6 @@ local state = {
 local ctx = { plugin = Plugin, state = state }
 addon.PortalContext = ctx
 
-local CAT_PRIORITY = {}
-for i, cat in ipairs(addon.PortalData.CategoryOrder) do
-    CAT_PRIORITY[cat] = i
-end
-
--- [ ORIENTATION ] -----------------------------------------------------------------------------------------------------
-local function IsHorizontal()
-    return currentOrientation == "TOP" or currentOrientation == "BOTTOM"
-end
-
-local function PositionIconForOrientation(icon, portalFrame, arcOffset, centerPos, iconSize)
-    icon:ClearAllPoints()
-    local halfIcon = iconSize / 2
-    local scale = icon:GetEffectiveScale()
-    local w, h = icon:GetSize()
-    if currentOrientation == "LEFT" then
-        local x, y = Pixel:SnapPosition(halfIcon + arcOffset, -centerPos, "CENTER", w, h, scale)
-        icon:SetPoint("CENTER", portalFrame, "TOPLEFT", x, y)
-    elseif currentOrientation == "RIGHT" then
-        local x, y = Pixel:SnapPosition(-halfIcon - arcOffset, -centerPos, "CENTER", w, h, scale)
-        icon:SetPoint("CENTER", portalFrame, "TOPRIGHT", x, y)
-    elseif currentOrientation == "TOP" then
-        local x, y = Pixel:SnapPosition(centerPos, -halfIcon - arcOffset, "CENTER", w, h, scale)
-        icon:SetPoint("CENTER", portalFrame, "TOPLEFT", x, y)
-    else
-        local x, y = Pixel:SnapPosition(centerPos, halfIcon + arcOffset, "CENTER", w, h, scale)
-        icon:SetPoint("CENTER", portalFrame, "BOTTOMLEFT", x, y)
-    end
-end
-
--- [ REFRESH ORCHESTRATION ] -------------------------------------------------------------------------------------------
-local function RepaintIcons()
-    local Combat = addon.PortalCombat
-    if not frame or not Plugin._portalActive or not Combat.CanInteract() then
-        return
-    end
-
-    local Layout = addon.PortalLayout
-    local IconModule = addon.PortalIcon
-    local Canvas = addon.PortalCanvas
-
-    for _, icon in ipairs(state.visibleIcons) do
-        icon:Hide()
-        icon:ClearAllPoints()
-    end
-    wipe(state.visibleIcons)
-
-    local totalItems = state.portalList and #state.portalList or 0
-    if totalItems == 0 then
-        frame:Hide()
-        return
-    end
-
-    local authoredIconSize = Plugin:GetSetting(1, "IconSize")
-    local authoredSpacing = Plugin:GetSetting(1, "Spacing")
-    local maxVisible = Plugin:GetSetting(1, "MaxVisible")
-    local frameScale = frame:GetEffectiveScale()
-    local iconSize = Pixel:Snap(authoredIconSize, frameScale)
-    local spacing = authoredSpacing == 0 and 0 or Pixel:Multiple(authoredSpacing, frameScale)
-
-    currentOrientation = Services.DetectOrientation(frame)
-    maxVisible = Layout.NormalizeMaxVisible(maxVisible, totalItems)
-    local compactness = Plugin:GetSetting(1, "Compactness") / 100
-    local iconPoolIndex = 0
-
-    local paint = {
-        iconSize = iconSize,
-        maxVisible = maxVisible,
-        fadeAmount = Layout.ResolveFadeAmount(Plugin:GetSetting(1, "FadeEffect")),
-        fontPath = Canvas.GetGlobalFontPath(),
-        positions = Services.GetComponentPositions(Plugin),
-        disabled = Canvas.BuildDisabledSet(Plugin),
-    }
-
-    local animate = state.animatePaint
-    state.animatePaint = nil
-
-    local renderList = (state.searchFilter and #state.searchFilter > 0) and state.searchFilter or state.portalList
-    local renderCount = #renderList
-    local shown = math_min(renderCount, maxVisible)
-    local startSlot = math_floor((maxVisible - shown) / 2)
-    local windowStart = state.scrollOffset % renderCount
-
-    for k = 0, shown - 1 do
-        iconPoolIndex = iconPoolIndex + 1
-
-        local displayIndex = startSlot + k
-        local actualIndex = ((windowStart + k) % renderCount) + 1
-        local data = renderList[actualIndex]
-
-        if data then
-            if not iconPool then
-                iconPool = {}
-            end
-            local icon = iconPool[iconPoolIndex]
-            if not icon then
-                icon = IconModule.Create(ctx)
-                table.insert(iconPool, icon)
-            end
-
-            IconModule.Configure(ctx, icon, data, displayIndex, paint)
-            Canvas.ApplyIconComponents(icon, data, state.mythicPlusCache, data.displayGroup == "FAVORITE", paint)
-
-            local axialPos, arcOffset =
-                Layout.CalculatePosition(displayIndex, maxVisible, iconSize, spacing, compactness)
-            icon.stableCenterPos = axialPos
-            PositionIconForOrientation(icon, frame.content, arcOffset, axialPos, iconSize)
-
-            if animate then
-                IconModule.PlayAppear(icon)
-            end
-            table.insert(state.visibleIcons, icon)
-        end
-    end
-
-    local frameLength = math_max(Layout.CalculateAxialExtent(maxVisible, iconSize, spacing, compactness), iconSize)
-    local perpExtent = Layout.CalculatePerpExtent(maxVisible, iconSize, spacing, compactness)
-    local frameThickness = iconSize + perpExtent + Pixel:Multiple(FRAME_THICKNESS_PAD, frameScale)
-
-    if IsHorizontal() then
-        frame:SetWidth(frameLength)
-        frame:SetHeight(frameThickness)
-    else
-        frame:SetWidth(frameThickness)
-        frame:SetHeight(frameLength)
-    end
-
-    local marginX = math_max(0, frame:GetWidth() - CLAMP_VISIBLE_MARGIN)
-    local marginY = math_max(0, frame:GetHeight() - CLAMP_VISIBLE_MARGIN)
-    frame:SetClampRectInsets(marginX, -marginX, -marginY, marginY)
-
-    if not Plugin._portalHidden then
-        frame:Show()
-    end
-    addon.PortalReveal.OnRepaint(ctx)
-end
-
 local function Refresh()
     local Combat = addon.PortalCombat
     if not frame or not Plugin._portalActive or not Combat.CanInteract() then
@@ -237,56 +95,10 @@ local function Refresh()
 
     state.searchFilter = nil
 
-    local Scanner = addon.PortalScanner
-    local Favorites = addon.PortalFavorites
+    local rawList = addon.PortalScanner:GetOrderedList()
+    state.portalList, state.firstIndexOfCategory = ViewList.Build(Plugin, rawList)
 
-    local rawList = Scanner:GetOrderedList()
-
-    for _, item in ipairs(rawList) do
-        item.displayGroup = Favorites.IsFavorite(Plugin, item) and "FAVORITE" or item.category
-    end
-
-    local hideLongCooldowns = Plugin:GetSetting(1, "HideLongCooldowns")
-    local enabledCategories = Plugin:GetSetting(1, "EnabledCategories") or {}
-    state.portalList = {}
-    for _, item in ipairs(rawList) do
-        local cooldownRemaining = item.cooldown or 0
-        local isCurrentSeason = item.category == "SEASONAL_DUNGEON" or item.category == "SEASONAL_RAID"
-        local cooldownPass = not hideLongCooldowns or isCurrentSeason or cooldownRemaining < LONG_COOLDOWN_THRESHOLD
-        local categoryPass = item.displayGroup == "FAVORITE" or enabledCategories[item.category] ~= false
-        if cooldownPass and categoryPass then
-            table.insert(state.portalList, item)
-        end
-    end
-
-    local orderIndex = {}
-    for i, item in ipairs(state.portalList) do
-        orderIndex[item] = i
-    end
-    table.sort(state.portalList, function(a, b)
-        local pa = CAT_PRIORITY[a.displayGroup] or 999
-        local pb = CAT_PRIORITY[b.displayGroup] or 999
-        if pa ~= pb then
-            return pa < pb
-        end
-        return orderIndex[a] < orderIndex[b]
-    end)
-
-    local categoryNames = addon.PortalData.CategoryNames
-    state.firstIndexOfCategory = {}
-    for i, item in ipairs(state.portalList) do
-        local cat = item.displayGroup
-        if state.firstIndexOfCategory[cat] == nil then
-            state.firstIndexOfCategory[cat] = i
-        end
-        item.searchShort = item.short and item.short:lower() or nil
-        item.searchName = item.name and item.name:lower() or nil
-        item.searchInst = item.instanceName and item.instanceName:lower() or nil
-        local catName = categoryNames[item.category]
-        item.searchCategory = catName and catName:lower() or nil
-    end
-
-    RepaintIcons()
+    IconWindow.Repaint(ctx)
 end
 
 local function RefreshWhenReady()
@@ -308,7 +120,7 @@ local function RefreshCooldowns()
     if #list == 0 then
         return
     end
-    addon.PortalScanner:RefreshCooldowns(list)
+    Cooldowns.Refresh(list)
     local anyActive = false
     for _, item in ipairs(list) do
         if item.cooldown and item.cooldown > 0 then
@@ -317,7 +129,7 @@ local function RefreshCooldowns()
         end
     end
     if anyActive or hadActiveCooldowns then
-        RepaintIcons()
+        IconWindow.Repaint(ctx)
     end
     hadActiveCooldowns = anyActive
 end
@@ -338,7 +150,7 @@ local function StartRuntimeWork(frame)
             if not Plugin._portalActive then
                 return
             end
-            addon.PortalScanner:RequestHousingData()
+            Housing:RequestOwnedHouses()
             RequestRefresh()
         end)
         Services.runtime:Ticker("cooldowns", COOLDOWN_REFRESH_INTERVAL, RefreshCooldowns)
@@ -355,7 +167,6 @@ RequestRefresh = function()
 end
 
 ctx.Refresh = Refresh
-ctx.RepaintIcons = RepaintIcons
 ctx.RequestRefresh = RequestRefresh
 
 -- [ FRAME CREATION ] --------------------------------------------------------------------------------------------------
@@ -446,9 +257,9 @@ function Plugin:OnLoad()
         end
         local Combat = addon.PortalCombat
         if event == "PLAYER_HOUSE_LIST_UPDATED" then
-            addon.PortalScanner:UpdateHousingCache(...)
+            Housing:SetOwnedHouses(...)
         elseif event == "PLAYER_ENTERING_WORLD" then
-            addon.PortalScanner:RequestHousingData()
+            Housing:RequestOwnedHouses()
         end
         if
             event == "PLAYER_REGEN_ENABLED"

@@ -9,6 +9,8 @@ Own the one secure portal frame and the icon window painted onto it, whichever s
 every protected write out of combat.
 
 ## Implementation
+- **Load order.** `Core.xml` composes the module bundles. Settings defaults and the host bridge load before the
+  controller's dependencies. Settings presentation and the Canvas bridge load before the controller and boot.
 - **Provider and context.** `Portal.lua` builds `addon.Portal` from `Integrations/Orbit.lua`'s bridge when that file
   stayed loaded, otherwise as a plain plugin whose `GetSetting`/`SetSetting` read `Settings/PortalStore.lua`.
   `addon.PortalContext` (`ctx`) is the one surface the View, Input, State and Integrations owners receive: the plugin,
@@ -30,21 +32,12 @@ every protected write out of combat.
   invalidates the reconciler.
 - **Refresh pipeline.** `RequestRefresh` coalesces requests into one debounced `Refresh` on the private runtime; the
   first pass after enable also schedules the delayed `initialScan` (housing request plus refresh) and the `cooldowns`
-  ticker. `Refresh` takes `PortalScanner:GetOrderedList()`, marks favorites as display group `FAVORITE`, drops disabled
-  categories and, with `HideLongCooldowns`, long cooldowns outside the current season, stable-sorts by
-  `PortalData.CategoryOrder` and records each group's first index and the search fields, then calls `RepaintIcons`.
-  `RepaintIcons` resolves its paint values from settings and services once per pass, paints the window of `searchFilter`
-  or `portalList` around `scrollOffset` through a plain icon pool (`View/PortalIcon.lua` creates and configures,
-  `PortalCanvas.lua` decorates), places each icon with `PortalLayout.lua` arc math for the detected orientation, resizes
-  and clamps the frame and lets Reveal re-assert. `RefreshCooldowns` repaints only while any cooldown is or was active.
-- **Scanner and data.** `PortalData.lua` declares `CategoryOrder`, localized `CategoryNames`, the current-season spell
-  lists and the per-expansion dungeon/raid, hearthstone, class, mage, engineering and toy tables with faction, class and
-  race requirements. `PortalScanner.lua` captures class, faction and race at file load, probes spells
-  (`C_SpellBook.IsSpellKnown`), toys (`PlayerHasToy` plus `C_ToyBox.IsToyUsable`) and items (count or equipped),
-  excludes seasonal spells from their expansion categories, folds raids into `RAID` and mage portals into
-  `MAGE_TELEPORT`, builds one random hearthstone entry over the owned `HEARTHSTONE_SHARED` items plus individual
-  entries for `HEARTHSTONE_UNIQUE`, and emits a housing entry from the cached `PLAYER_HOUSE_LIST_UPDATED` payload, the
-  tracked house or level 80. `GetOrderedList` flattens by `CategoryOrder`; `RefreshCooldowns` updates entries in place.
+  ticker. `Refresh` passes `PortalScanner:GetOrderedList()` to `View/PortalViewList.lua` and publishes its display list
+  and category jump indexes. `View/PortalIconWindow.lua` paints the visible slice for refresh and input using the
+  shared icon pool. `RefreshCooldowns` repaints only while any cooldown is or was active.
+- **Discovery.** `PortalData.lua` declares the destination catalogue. `Discovery/Discovery.xml` loads eligibility,
+  source-specific scanners and cooldown reads. The controller rebuilds the list from `PortalScanner:GetOrderedList()`
+  and refreshes existing spell and item entries through `PortalCooldowns`. See `Discovery/README.md`.
 - **Boot.** `PortalBoot.lua` hydrates the store at `ADDON_LOADED` and registers the AddOns category; at `PLAYER_LOGIN`
   the combat-gated `startup` reconciler constructs once, creates the LibOrbitUI movement overlay, then enables or
   disables per `Enabled`. `Boot.ShowSettings` builds `OrbitPortalSettings` once from `Settings/PortalSchema.lua` with an
@@ -62,7 +55,7 @@ every protected write out of combat.
   partial graph is never reconstructed. Standalone `Boot.Apply` disables immediately even in combat (alpha and timers
   only); the deferred hide completes through the reconciler after combat.
 - Item names come from `C_Item.GetItemInfo`, which is nil until the item cache fills; the scanner emits a localized
-  placeholder and the next refresh resolves it. `GetCooldownInfo` returns zeros for secret start or duration.
+  placeholder and the next refresh resolves it. `PortalCooldowns.Read` returns zeros for secret start or duration.
 - The seasonal lists in `PortalData.lua` decide both the `SEASONAL_*` categories and the exclusion from expansion
   categories, so a listed spell never appears twice. Housing needs `C_Housing.TeleportHome`; its icon stays inert
   until a complete `houseInfo` arrives.
@@ -72,7 +65,7 @@ every protected write out of combat.
 - `onDisplayChanged` re-enters through `Boot.Apply`, which under the bridge calls `ApplySettings` directly.
 
 ## Secrets
-Mythic+ season bests and cooldown values may be secret: the scanner returns zero cooldowns for secret values, and
+Mythic+ season bests and cooldown values may be secret: spell and item cooldown reads return zero for secret values, and
 `PortalCanvas.lua` and `View/PortalTooltip.lua` cache only non-secret scores in `state.mythicPlusCache` and fall back
 to that cache. Native cooldown frames receive supported values directly.
 

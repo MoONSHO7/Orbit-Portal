@@ -25,6 +25,11 @@ function Bridge.CreatePlugin()
     for _, key in ipairs(COMPONENT_KEYS) do
         Engine.CanvasMode.ComponentCatalog:RegisterDeclared(key)
     end
+    if type(Orbit.ExternalUIHost.RequestPortalRescan) == "function" then
+        Orbit.EventBus:On("ORBIT_PORTAL_RESCAN_REQUESTED", function()
+            plugin:HandleCommand("scan")
+        end, Bridge, plugin)
+    end
     return plugin
 end
 

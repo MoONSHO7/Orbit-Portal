@@ -14,43 +14,6 @@
 ## X-License: All Rights Reserved
 ## X-Category: Interface Enhancements
 
-
-# Data
 Libs\LibOrbitUI-1.0\LibOrbitUI-1.0.xml
-Localization\Generated.lua
-Localization\Portal.lua
-Localization\Messages.lua
-Core\Settings\PortalDefaults.lua
-Core\Settings\PortalStore.lua
-Core\PortalFonts.lua
-Core\PortalServices.lua
-Core\Integrations\Orbit.lua
-Core\PortalData.lua
-
-# Pure helpers (no Portal deps)
-Core\PortalLayout.lua
-Core\PortalCanvas.lua
-
-# Runtime detection
-Core\PortalScanner.lua
-
-# State
-Core\State\PortalFavorites.lua
-Core\State\PortalCombat.lua
-
-# View
-Core\View\PortalTooltip.lua
-Core\View\PortalIcon.lua
-Core\View\PortalReveal.lua
-
-# Input
-Core\Input\PortalNavigation.lua
-
-# Settings
-Core\Settings\PortalSchema.lua
-Core\Settings\PortalCommands.lua
-
-# Plugin root — depends on all of the above
-Core\Integrations\OrbitCanvas.lua
-Core\Portal.lua
-Core\PortalBoot.lua
+Localization\Localization.xml
+Core\Core.xml

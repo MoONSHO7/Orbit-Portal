@@ -1,0 +1,8 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="PortalEligibility.lua"/>
+    <Script file="PortalCooldowns.lua"/>
+    <Script file="PortalHousing.lua"/>
+    <Script file="PortalSpellSources.lua"/>
+    <Script file="PortalItemSources.lua"/>
+    <Script file="PortalScanner.lua"/>
+</Ui>

@@ -9,7 +9,7 @@ Prove that the shared movement and settings UI can serve both Orbit and standalo
 travel behavior. This is the standalone library pilot, not the completed migration/export release.
 
 ## Implementation
-`Orbit_Portal.toc` loads the embedded library and `Localization/` first, then `Core/` in dependency order: settings
+`Orbit_Portal.toc` loads the embedded library and `Localization/Localization.xml` first, then `Core/Core.xml`: settings
 defaults and store, fonts and the private LibOrbitUI context, the optional Orbit bridge, data, pure layout and
 decoration helpers, the scanner, state, view, input, schema and commands, and last the Canvas bridge, the controller
 and standalone boot. `Core/README.md` maps the controller, refresh pipeline, scanner and boot; `Core/Settings`,

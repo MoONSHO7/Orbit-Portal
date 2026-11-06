@@ -12,8 +12,8 @@ mouse wheel, also exposed as `ctx.HandleWheel` for icons, which scrolls `state.s
 or the full list; over the full list Shift jumps to the previous or next display group's first entry. A module-level,
 `UIParent`-parented `searchFrame` captures typed characters while shown: a short-lived buffer is matched against each
 entry's short name, name, instance and category, prefix matches outranking substring matches and the short name
-outranking other fields at each level, and `ApplyFilter` installs `state.searchFilter` and repaints through the
-controller; `TAB` pages matches. Single-character keys are consumed and everything else propagates; the buffer text
+outranking other fields at each level. `ApplyFilter` installs `state.searchFilter` and requests a paint from
+`PortalIconWindow`; `TAB` pages matches. Single-character keys are consumed and everything else propagates; the buffer text
 fades out beside the frame, clearing the filter when it ends. `ShowSearch` requires the setting, an active plugin, no
 Edit Mode and `PortalCombat.CanInteract()`; `HideSearch` restores propagation before hiding; `ApplySettings` re-reads
 `EnableKeyboardSearch`.

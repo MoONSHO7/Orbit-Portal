@@ -1,7 +1,7 @@
 {
   "library": "LibOrbitUI-1.0",
   "apiMajor": 1,
-  "apiMinor": 17,
+  "apiMinor": 18,
   "source": "Orbit-Libs/LibOrbitUI/LibOrbitUI-1.0",
   "files": {
     "Libs/LibOrbitUI-1.0/Addon/Addon.lua": "2a0bdc950b49d61ea9036d969890b5611851c8b2672e6989eca8232eba460235",
@@ -9,7 +9,7 @@
     "Libs/LibOrbitUI-1.0/Addon/AddonSettings.lua": "78d4d928a9299a781c6fe793e1bf54c0c0386f4a5b48bc227f2591f6b879d5f4",
     "Libs/LibOrbitUI-1.0/Config/Config.lua": "e360a0f5fd724759b9667ce188699df65b0e0e75b4588d5ed92578261d47889b",
     "Libs/LibOrbitUI-1.0/Config/ConfigColorProvider.lua": "58daa489026e029c4d974042230454e2c3a02ed4f7cd49a9bd68a1d38545e13a",
-    "Libs/LibOrbitUI-1.0/Config/ConfigPickerWidgets.lua": "9bdc53a283a5ca1bc119fb9384ebc834b7160f10762cc771ad2c795924b3ee43",
+    "Libs/LibOrbitUI-1.0/Config/ConfigPickerWidgets.lua": "791921db0a4784a6c1bac652c055133f80f40dbf3013bc6f638c6f7bcf5f91d6",
     "Libs/LibOrbitUI-1.0/Config/ConfigSchema.lua": "e5f3d1ce94ed354d8af6802be2aed9ec78a2c518e27f8b501cd9f0ee9db81859",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigConfirmPopup.lua": "4ad7fde78ae27af16c1f4c267b97bb29c80a6045b24eb380aea228c288af3e51",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigDialog.lua": "0ad00a1ed5cb9f14d5b0ec2c32d4e0662b199dc08da823c5df2e9f1e5c2232d0",
@@ -24,7 +24,7 @@
     "Libs/LibOrbitUI-1.0/Config/LayoutTabs.lua": "3b92a731eb2519474da78a2a26023c4422c1dc1dac296d5c56f9ff8c3baff324",
     "Libs/LibOrbitUI-1.0/Config/Pickers/ConfigColorCurvePicker.lua": "6ca2d02a573cc54135a649cd31237fa4937fb8ceeef93c668a183e093564eced",
     "Libs/LibOrbitUI-1.0/Config/Pickers/ConfigColorPicker.lua": "77885e953f4fc15ddf67f8959584ee9232e61cf892f518d1b23ecabe9fe5d5fd",
-    "Libs/LibOrbitUI-1.0/Config/Pickers/ConfigFontPicker.lua": "d071a298d3739133db82d6fe76c453d0754ecc5871a3640199c2fedc531b7f12",
+    "Libs/LibOrbitUI-1.0/Config/Pickers/ConfigFontPicker.lua": "ebf4a16715d3ff5928096e235ae714b655c72f8becbb66361b8528e6371de4b5",
     "Libs/LibOrbitUI-1.0/Config/Pickers/ConfigPickerControl.lua": "7d68c8a2738d880be93a6039909a064caa71632447c6b521bf53f68ef2aae237",
     "Libs/LibOrbitUI-1.0/Config/Pickers/ConfigTexturePicker.lua": "ff0a8b1fa9a256622d7dde6f055010a192409b719c4030efaa14d4929494024b",
     "Libs/LibOrbitUI-1.0/Config/Pickers/MediaMenu.lua": "e31922012d9b293e3b9c12ae606dca55e47f8a92f4878ae2873ca39a378f3442",
@@ -37,7 +37,7 @@
     "Libs/LibOrbitUI-1.0/Config/Widgets/ConfigSlider.lua": "961d07b06a2ee38ced2db3bff0f86e25ae9b0cc22a3a971fd2558a7177ab8cb6",
     "Libs/LibOrbitUI-1.0/Config/Widgets/ConfigValueSwatch.lua": "ea72fe17e39c271a1f5a0af8944cbbbb0e5f5b6705217f7d2f666eb083b2e4c8",
     "Libs/LibOrbitUI-1.0/Config/Widgets/ScrollBar.lua": "612ed29932fb296ac08609e5c748c12c3d6da8db3ce8d94609058184f013beeb",
-    "Libs/LibOrbitUI-1.0/Core/Bootstrap.lua": "888247b91a5061323abd3da7392082fa28eeaf29d0458422a802b29ea9bebb21",
+    "Libs/LibOrbitUI-1.0/Core/Bootstrap.lua": "33914acb62ae1c21eb664d8bfa08c29b4e75972ed71b86fa4b8be26ae35c70bc",
     "Libs/LibOrbitUI-1.0/Core/Callbacks.lua": "33f13478112284d94d76b8aa2dda1799568a4b4202a6a6e2714f63c9be4b4cf5",
     "Libs/LibOrbitUI-1.0/Core/Client.lua": "b73107d0423959277ba03977593f5a577a34e2a5de783695adc6faf56175214f",
     "Libs/LibOrbitUI-1.0/Core/Context.lua": "bd5800fd9211599e78266ed1379b17518761f5c3819c84da546a38708adb25b0",
@@ -55,14 +55,17 @@
     "Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-click-left.tga": "aadfa250ae4ecf04d10c841e5d0aa5fa0ea605755754771de92919417e1327d9",
     "Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-click-middle.tga": "e1abf167884110dbe68c549e5dd0147c4dd1117029dedb501b443f8c63ba5a93",
     "Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-click-right.tga": "559698a306f261c91b91a70af600bea154d7dc53e688aa0a31229504430ae408",
+    "Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-key-alt.tga": "ed5caa2ee3099b6f0c65c8e3d801f5b1a1d8eb34f60c061293e12931c8d46b0b",
+    "Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-key-control.tga": "565ff62cc240c93d430c22d4d3c063a12040e2fc3a6aff7af0af07b65090ced6",
+    "Libs/LibOrbitUI-1.0/Rendering/Assets/orbit-key-shift.tga": "543fd82f14599985ae5482089e7d819ce096950d52c7a96a48fd03b63e036d7c",
     "Libs/LibOrbitUI-1.0/Rendering/ColorCurve.lua": "6cc40ee1fbb4fe7d8af71b2205c41561141579b85450eb6ff9226d4058418287",
     "Libs/LibOrbitUI-1.0/Rendering/GridMath.lua": "dcb4c6ab3a4e204420987090c6bad65571db6b8bde0f87a7cbb317e2a785f5af",
     "Libs/LibOrbitUI-1.0/Rendering/Pixel.lua": "56678291219d8e3dfb3c9b0b0f3afc909029d8bc401f1ae6ad2c5ffa2bda5d6a",
     "Libs/LibOrbitUI-1.0/Rendering/Text.lua": "f0d2021d80d8495ff2d30d2eb41ebf875e923e7e38350e9ccc3d85d5155eb9c0",
     "Libs/LibOrbitUI-1.0/Rendering/TextPosition.lua": "da94abb3922b9049e8937c5cfd39a39f5c3061eecc2487c9091014501d5954d6",
     "Libs/LibOrbitUI-1.0/Rendering/Tooltip.lua": "9ff7f528a33df5d05fadd4308dc8ebcd6e1e0d97e98e0b28d464439cf60e3b72",
-    "Libs/LibOrbitUI-1.0/Rendering/TooltipClick.lua": "c49bca2c1bb55e3f4a531b9d8f44c17704ef958caa0cf469be470525c4a3be2c",
+    "Libs/LibOrbitUI-1.0/Rendering/TooltipClick.lua": "e9b0eada19d53293a2851735ea302e824316d96e2dd0085202bf87c87938299c",
     "Localization/Generated.lua": "fd8b6bd0158a2b2898db940163edcddff63bf76a6c7ae4207527f84b962f8790"
   },
-  "contentRevision": "64d9cdecaebc1b7ef9fd17f624e256d0fc2653ffdeaeb741fe923c318748b9ec"
+  "contentRevision": "3102bc70250460e42168b7382ccf59eba56979f6be8821fa1223b21ca8601fc6"
 }

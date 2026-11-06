@@ -16,7 +16,7 @@ entering a restricted state clears edit and hover state and releases the search 
 encounter-only restrictions because the secure driver owns combat hiding; leaving it re-runs `UpdateVisibility`,
 restores keyboard propagation and re-shows search when the cursor is still over the frame. `PortalFavorites` keys an
 entry by `spellID`, `itemID` or `name`, stores keys as strings in the `Favorites` map, and `Toggle` writes a copy
-through `plugin:SetSetting`; `Refresh` turns a favorite into display group `FAVORITE`.
+through `plugin:SetSetting`; `PortalViewList` assigns the `FAVORITE` display group.
 
 ## Gotchas
 - Entries without a spell or item id, the random hearthstone and housing, are keyed by their localized or house name,

@@ -54,9 +54,17 @@ scenarios = (
 )
 
 
-def load_runtime(scenario):
+def load_runtime(scenario, host_rescan=False):
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(FIXTURE.read_text(encoding="utf-8"), scenario)
+    if host_rescan:
+        lua.execute(r'''
+            Orbit.ExternalUIHost.RequestPortalRescan = function() end
+            Orbit.EventBus = { On = function(_, event, callback, context, profilerOwner)
+                assert(event == "ORBIT_PORTAL_RESCAN_REQUESTED" and not rescanRequest)
+                rescanRequest = { callback = callback, context = context, profilerOwner = profilerOwner }
+            end }
+        ''')
     loader = lua.eval("function(source, name) assert(loadstring(source, name))('Orbit_Portal', addon) end")
     for path in loaded:
         loader(path.read_text(encoding="utf-8"), str(path))
@@ -68,6 +76,29 @@ if not args.scanner_only:
         lua = load_runtime(scenario)
         lua.execute(CASES.read_text(encoding="utf-8"), scenario)
         print(f"PASS: real TOC/XML {scenario}")
+    lua = load_runtime("legacy", host_rescan=True)
+    lua.execute(r'''
+        local request = assert(rescanRequest)
+        local plugin = addon.Portal
+        assert(request.context == addon.PortalOrbit and request.profilerOwner == plugin)
+        Emit("ADDON_LOADED", "Orbit_Portal")
+        Emit("PLAYER_LOGIN")
+        plugin:OnLoad()
+        plugin:OnEnable()
+        local function CheckRescan()
+            local before = #messages
+            local cache = addon.PortalContext.state.mythicPlusCache
+            cache.rescanProbe = true
+            request.callback(request.context)
+            assert(cache.rescanProbe == nil and #messages == before + 1)
+            assert(messages[#messages]:find(addon.L.CMD_PORTAL_SCAN_DONE, 1, true))
+        end
+        CheckRescan()
+        plugin:OnDisable()
+        CheckRescan()
+        assert(#errors == 0)
+    ''')
+    print("PASS: hosted rescan delegates while enabled and disabled")
 
 scanner_scenarios = (
     "scanner_human_mage",

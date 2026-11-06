@@ -1,0 +1,17 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Include file="Settings/Defaults.xml"/>
+    <Script file="PortalFonts.lua"/>
+    <Script file="PortalServices.lua"/>
+    <Include file="Integrations/Orbit.xml"/>
+    <Script file="PortalData.lua"/>
+    <Script file="PortalLayout.lua"/>
+    <Script file="PortalCanvas.lua"/>
+    <Include file="Discovery/Discovery.xml"/>
+    <Include file="State/State.xml"/>
+    <Include file="View/View.xml"/>
+    <Include file="Input/Input.xml"/>
+    <Include file="Settings/Settings.xml"/>
+    <Include file="Integrations/OrbitCanvas.xml"/>
+    <Script file="Portal.lua"/>
+    <Script file="PortalBoot.lua"/>
+</Ui>

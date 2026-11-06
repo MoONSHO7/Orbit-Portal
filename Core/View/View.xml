@@ -1,0 +1,7 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="PortalTooltip.lua"/>
+    <Script file="PortalIcon.lua"/>
+    <Script file="PortalReveal.lua"/>
+    <Script file="PortalViewList.lua"/>
+    <Script file="PortalIconWindow.lua"/>
+</Ui>

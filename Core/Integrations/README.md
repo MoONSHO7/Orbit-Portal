@@ -21,6 +21,8 @@ callbacks (enter marks Edit Mode only when interaction is allowed, hides search 
 requests a refresh); `Disable` unregisters the Edit Mode callbacks. `UpdateVisibility` adds profile suppression and
 mounted-hidden state through `OOCFadeService:SetLifecycleHidden`. `RenderSettings` delegates tab selection to the host's
 `SchemaBuilder` and appends the selected `PortalSchema` controls after its tab selector for `Engine.Config:Render`.
+With the host's `RequestPortalRescan` capability, the bridge subscribes to `ORBIT_PORTAL_RESCAN_REQUESTED` as an
+installation-lifetime context. The command remains callable while the widget is disabled.
 `OrbitCanvas.lua` adds `frame:CreateCanvasPreview`, a fixed-size circular
 icon preview with Timer, DungeonScore and DungeonShort text components and a draggable FavouriteStar, reading the open
 draft and `IconSize`; its text uses live's default size and colours (score tier, theme Timer colour).

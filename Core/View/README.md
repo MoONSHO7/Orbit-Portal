@@ -7,8 +7,10 @@ Secure icon buttons, the hover reveal tween and the private tooltip.
 Keep secure attribute ownership, animation and tooltip content separate from the controller's refresh pipeline.
 
 ## Implementation
+`PortalViewList.lua` builds a stable favorite/category order, applying cooldown and category preferences before indexing
+search text and category jumps. `PortalIconWindow.lua` pools icons and paints the visible slice of that list or search results.
 `PortalIcon.lua` owns the secure buttons and is the only writer of their action attributes. `Create(ctx)` builds one
-`SecureActionButtonTemplate` button under `ctx.content` for the controller's icon pool, with its masked art, cooldown,
+`SecureActionButtonTemplate` button under `ctx.content` for the pool, with its masked art, cooldown,
 decoration regions and appear animation, and routes `OnEnter`/`OnLeave` to `ctx.HoverEnter`/`HoverExit` and
 `PortalTooltip`. `Configure(ctx, icon, data, index, paint)` applies one entry with the controller's paint values: it
 clears every action attribute, sets those of the entry's type (`spell`, `toy`, `item`, a random hearthstone pick or
@@ -20,7 +22,7 @@ click feedback. `PortalReveal.lua` owns the one tween driver over `ctx.content`:
 context's private tooltip from the entry, its bind location, Mythic+ data and remaining cooldown.
 
 ## Gotchas
-- Attributes are cleared before every configure and never set in Edit Mode. `Configure` runs only from `RepaintIcons`,
+- Attributes are cleared before every configure and never set in Edit Mode. `Configure` runs from `PortalIconWindow.Repaint`,
   which is combat-gated, so the only in-combat path is `PreClick`, which skips its re-roll under lockdown.
 - The `SetCooldown` override on each cooldown instance exists because `SetCooldown` materializes new texture regions
   that need the circular mask; a `MaskTexture` region must never receive `AddMaskTexture`.
@@ -32,7 +34,7 @@ context's private tooltip from the entry, its bind location, Mythic+ data and re
 ## Secrets
 Season best, score, level and duration reads are guarded with `issecretvalue` before arithmetic or caching; the
 tooltip falls back to `state.mythicPlusCache`. Cooldown remaining values reach the tooltip already filtered by the
-scanner.
+cooldown reader.
 
 ## References
 `../README.md`, `../State/README.md`, `../Integrations/README.md` (the Canvas preview mirrors this layout),
