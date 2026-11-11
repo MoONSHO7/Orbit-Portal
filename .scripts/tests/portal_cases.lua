@@ -85,6 +85,43 @@ if scenario == "standalone" or scenario == "legacy" then
         ctx.state.visibleIcons[1] == firstIcon and firstIcon:GetAttribute("spell") == 456,
         "wheel repaints pooled icons"
     )
+    addon.PortalScanner.GetOrderedList = function()
+        return {
+            { type = "spell", spellID = 810, name = "Sunken Vault", category = "CLASS", icon = 134400 },
+            { type = "spell", spellID = 811, name = "Vault", short = "VLT", category = "CLASS", icon = 134400 },
+            { type = "spell", spellID = 812, name = "Gate", short = "V", category = "CLASS", icon = 134400 },
+            { type = "spell", spellID = 813, name = "Valley", short = "GV", category = "CLASS", icon = 134400 },
+            { type = "spell", spellID = 814, name = "Shrine", short = "SV", category = "CLASS", icon = 134400 },
+        }
+    end
+    ctx.Refresh()
+    ctx.state.scrollOffset = 2
+    ctx.state.isMouseOver = true
+    addon.PortalNavigation.ShowSearch()
+    local search
+    for _, candidate in ipairs(frames) do
+        if candidate.scripts.OnChar and candidate.scripts.OnKeyDown and candidate:IsShown() then
+            search = candidate
+            break
+        end
+    end
+    Check(search, "hover shows the search keyboard frame")
+    search.scripts.OnKeyDown(search, "V")
+    Check(not search.propagate, "search consumes a typing key")
+    search.scripts.OnChar(search, "V")
+    local ranked = {}
+    for index, item in ipairs(ctx.state.searchFilter) do
+        ranked[index] = item.spellID
+    end
+    Check(table.concat(ranked, ",") == "812,811,813,814,810", "search ranks matches and preserves ties")
+    search.scripts.OnKeyDown(search, "TAB")
+    Check(not search.propagate and ctx.state.scrollOffset == 1, "tab pages the active filter")
+    ctx.HandleWheel(ctx.frame, -1)
+    Check(ctx.state.scrollOffset == 2, "wheel pages the active filter")
+    search.scripts.OnChar(search, "!")
+    Check(not ctx.state.searchFilter and ctx.state.scrollOffset == 2, "no match restores the unfiltered scroll")
+    ctx.HoverExit()
+    Check(not search:IsShown() and search.propagate, "hover exit releases search and restores propagation")
     addon.PortalScanner.GetOrderedList = scan
     ctx.state.scrollOffset = 0
     ctx.Refresh()

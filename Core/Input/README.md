@@ -7,16 +7,12 @@ Mouse-wheel scrolling, category jumps and the transient keyboard search over the
 Capture keyboard input only while the cursor is over the frame, and release it on every path that can strand a hover.
 
 ## Implementation
-`PortalNavigation.lua` owns wheel and keyboard input. `Install(ctx)` runs once from frame creation: it binds the frame's
-mouse wheel, also exposed as `ctx.HandleWheel` for icons, which scrolls `state.scrollOffset` through the search filter
-or the full list; over the full list Shift jumps to the previous or next display group's first entry. A module-level,
-`UIParent`-parented `searchFrame` captures typed characters while shown: a short-lived buffer is matched against each
-entry's short name, name, instance and category, prefix matches outranking substring matches and the short name
-outranking other fields at each level. `ApplyFilter` installs `state.searchFilter` and requests a paint from
-`PortalIconWindow`; `TAB` pages matches. Single-character keys are consumed and everything else propagates; the buffer text
-fades out beside the frame, clearing the filter when it ends. `ShowSearch` requires the setting, an active plugin, no
-Edit Mode and `PortalCombat.CanInteract()`; `HideSearch` restores propagation before hiding; `ApplySettings` re-reads
-`EnableKeyboardSearch`.
+`PortalNavigation.lua` owns keyboard capture, the query buffer and the transition between filtered and full lists.
+`PortalSearchRanking.lua` matches indexed names, instances and categories in stable score order. It buckets matches
+in one pass and preserves display order among equal scores. `PortalSearchDisplay.lua` presents the query and owns
+its fade. `PortalWheel.lua` binds the frame and icon wheel handler: it pages matches and jumps between groups with
+Shift on the full list. Keyboard Tab and wheel scrolling renew the active search. Filter changes repaint through
+`PortalIconWindow` and restore the previous unfiltered scroll position on exit.
 
 ## Gotchas
 - An icon hidden mid-hover never fires `OnLeave`, so `searchFrame` polls `ctx.IsCursorOverFrame` while shown and calls

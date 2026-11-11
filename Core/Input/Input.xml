@@ -1,3 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="PortalSearchRanking.lua"/>
+    <Script file="PortalSearchDisplay.lua"/>
+    <Script file="PortalWheel.lua"/>
     <Script file="PortalNavigation.lua"/>
 </Ui>

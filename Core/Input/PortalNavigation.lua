@@ -1,25 +1,15 @@
 local _, addon = ...
-local Services = addon.PortalServices
 local IconWindow = addon.PortalIconWindow
+local SearchDisplay = addon.PortalSearchDisplay
+local RankMatches = addon.PortalSearchRanking.Match
+local Wheel = addon.PortalWheel
 
-local ipairs = ipairs
-local table_sort = table.sort
-local math_floor = math.floor
 local GetTime = GetTime
 local GetCursorPosition = GetCursorPosition
-local IsShiftKeyDown = IsShiftKeyDown
 local InCombatLockdown = InCombatLockdown
 
 -- [ CONSTANTS ] -------------------------------------------------------------------------------------------------------
 local SEARCH_BUFFER_TIMEOUT = 0.8
-local DISPLAY_HOLD = 0.8
-local DISPLAY_FADE = 0.35
-local DISPLAY_FONT_SIZE = 20
-local DISPLAY_GAP = 6
-local DISPLAY_LEVEL_OFFSET = 10
-local DISPLAY_MATCH_COLOR = { 1, 1, 1 }
-local DISPLAY_NOMATCH_COLOR = { 1, 0.25, 0.25 }
-local SCORE_EXACT_SHORT = 5
 local HOVER_POLL_INTERVAL = 0.1
 
 -- [ MODULE ] ----------------------------------------------------------------------------------------------------------
@@ -32,10 +22,7 @@ local preFilterScroll = 0
 local installedCtx
 local searchFrame = CreateFrame("Frame", nil, UIParent)
 searchFrame:Hide()
-local searchDisplay = CreateFrame("Frame", nil, UIParent)
-searchDisplay:Hide()
-local searchDisplayText
-local searchFadeAnim
+local searchDisplay = SearchDisplay.Create()
 local keyboardSearchEnabled = true
 
 -- [ SEARCH FILTER ] ---------------------------------------------------------------------------------------------------
@@ -62,104 +49,16 @@ local function ApplyFilter(items)
 end
 
 -- [ SEARCH DISPLAY ] --------------------------------------------------------------------------------------------------
-local function ClearBufferAndDisplay()
+function Navigation.ClearSearchBuffer()
 	searchBuffer = ""
 	searchBufferExpiry = 0
 	ApplyFilter(nil)
-	if not searchDisplay then
-		return
-	end
-	if searchFadeAnim and searchFadeAnim:IsPlaying() then
-		searchFadeAnim:Stop()
-	end
-	searchDisplay:SetAlpha(InCombatLockdown() and 0 or 1)
-	if not InCombatLockdown() then
-		searchDisplay:Hide()
-	end
-end
-
-local function ShowSearchBufferText(hasMatch)
-	if not searchDisplay then
-		return
-	end
-	searchDisplayText:SetText(searchBuffer:upper())
-	local c = hasMatch and DISPLAY_MATCH_COLOR or DISPLAY_NOMATCH_COLOR
-	searchDisplayText:SetTextColor(c[1], c[2], c[3])
-	if searchFadeAnim then
-		searchFadeAnim:Stop()
-	end
-	searchDisplay:SetAlpha(1)
-	searchDisplay:Show()
-	if searchFadeAnim then
-		searchFadeAnim:Play()
-	end
+	SearchDisplay.Clear(searchDisplay)
 end
 
 local function KeepSearchAlive()
 	searchBufferExpiry = GetTime() + SEARCH_BUFFER_TIMEOUT
-	if searchDisplay and searchDisplay:IsShown() and searchFadeAnim then
-		searchFadeAnim:Stop()
-		searchDisplay:SetAlpha(1)
-		searchFadeAnim:Play()
-	end
-end
-
--- [ MATCHING ] --------------------------------------------------------------------------------------------------------
-local function ScoreMatch(data, needle)
-	if not data then
-		return 0
-	end
-	local short = data.searchShort
-	local name = data.searchName
-	local inst = data.searchInst
-	local cat = data.searchCategory
-	if short == needle then
-		return SCORE_EXACT_SHORT
-	end
-	if short and short:sub(1, #needle) == needle then
-		return 4
-	end
-	if
-		(name and name:sub(1, #needle) == needle)
-		or (inst and inst:sub(1, #needle) == needle)
-		or (cat and cat:sub(1, #needle) == needle)
-	then
-		return 3
-	end
-	if short and short:find(needle, 1, true) then
-		return 2
-	end
-	if
-		(name and name:find(needle, 1, true))
-		or (inst and inst:find(needle, 1, true))
-		or (cat and cat:find(needle, 1, true))
-	then
-		return 1
-	end
-	return 0
-end
-
-local function RankMatches(portalList, needle)
-	local entries = {}
-	if needle and needle ~= "" then
-		for i, data in ipairs(portalList) do
-			local score = ScoreMatch(data, needle)
-			if score > 0 then
-				entries[#entries + 1] = { item = data, score = score, order = i }
-			end
-		end
-		table_sort(entries, function(a, b)
-			if a.score ~= b.score then
-				return a.score > b.score
-			end
-			return a.order < b.order
-		end)
-	end
-	local items = {}
-	for k, e in ipairs(entries) do
-		items[k] = e.item
-	end
-	return items
+	SearchDisplay.KeepAlive(searchDisplay)
 end
 
 function Navigation.Install(ctx)
@@ -168,59 +67,6 @@ function Navigation.Install(ctx)
 	local frame = ctx.frame
 	local state = ctx.state
 	local Combat = addon.PortalCombat
-	local NormalizeMaxVisible = addon.PortalLayout.NormalizeMaxVisible
-
-	local function OnMouseWheel(_, delta)
-		if not Combat.CanInteract() then
-			return
-		end
-		local filter = state.searchFilter
-		if filter and #filter > 0 then
-			KeepSearchAlive()
-			state.scrollOffset = (state.scrollOffset - delta) % #filter
-			IconWindow.Repaint(ctx)
-			return
-		end
-		local portalList = state.portalList
-		local totalIcons = #portalList
-		if totalIcons == 0 then
-			return
-		end
-
-		if IsShiftKeyDown() then
-			local maxVisible = NormalizeMaxVisible(ctx.plugin:GetSetting(1, "MaxVisible"), totalIcons)
-			local centerSlot = math_floor(maxVisible / 2)
-			local scrollOffset = state.scrollOffset
-			local currentCenterIndex = ((scrollOffset + centerSlot) % totalIcons) + 1
-			local currentCategory = portalList[currentCenterIndex] and portalList[currentCenterIndex].displayGroup
-
-			if delta > 0 then
-				local firstIndexMap = state.firstIndexOfCategory
-				for offset = 1, totalIcons - 1 do
-					local checkIndex = ((currentCenterIndex - 1 - offset) % totalIcons) + 1
-					local item = portalList[checkIndex]
-					if item and item.displayGroup ~= currentCategory then
-						local target = firstIndexMap and firstIndexMap[item.displayGroup] or checkIndex
-						state.scrollOffset = (target - 1 - centerSlot + totalIcons) % totalIcons
-						break
-					end
-				end
-			else
-				for offset = 1, totalIcons - 1 do
-					local checkIndex = ((currentCenterIndex - 1 + offset) % totalIcons) + 1
-					local item = portalList[checkIndex]
-					if item and item.displayGroup ~= currentCategory then
-						state.scrollOffset = (checkIndex - 1 - centerSlot + totalIcons) % totalIcons
-						break
-					end
-				end
-			end
-		else
-			state.scrollOffset = (state.scrollOffset - delta) % totalIcons
-		end
-
-		IconWindow.Repaint(ctx)
-	end
 
 	local function PageResults()
 		KeepSearchAlive()
@@ -256,12 +102,10 @@ function Navigation.Install(ctx)
 		local hasMatch = #matches > 0
 
 		ApplyFilter(hasMatch and matches or nil)
-		ShowSearchBufferText(hasMatch)
+		SearchDisplay.Show(searchDisplay, searchBuffer, hasMatch)
 	end
 
-	frame:EnableMouseWheel(true)
-	frame:SetScript("OnMouseWheel", OnMouseWheel)
-	ctx.HandleWheel = OnMouseWheel
+	Wheel.Install(ctx, KeepSearchAlive)
 
 	searchFrame:EnableKeyboard(true)
 	if not InCombatLockdown() then
@@ -325,26 +169,7 @@ function Navigation.Install(ctx)
 		end
 	end)
 
-	local fontPath = Services.GetSearchFontPath()
-	searchDisplay:SetParent(frame)
-	searchDisplay:SetFrameLevel(frame:GetFrameLevel() + DISPLAY_LEVEL_OFFSET)
-	searchDisplay:SetSize(1, 1)
-	searchDisplay:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", DISPLAY_GAP, 0)
-	searchDisplay:Hide()
-
-	searchDisplayText = searchDisplay:CreateFontString(nil, "OVERLAY")
-	searchDisplayText:SetPoint("BOTTOMLEFT")
-	Services.SetFont(searchDisplayText, fontPath, DISPLAY_FONT_SIZE, "OUTLINE")
-	searchDisplayText:SetTextColor(1, 1, 1)
-
-	searchFadeAnim = searchDisplay:CreateAnimationGroup()
-	searchFadeAnim:SetToFinalAlpha(true)
-	local fade = searchFadeAnim:CreateAnimation("Alpha")
-	fade:SetFromAlpha(1)
-	fade:SetToAlpha(0)
-	fade:SetStartDelay(DISPLAY_HOLD)
-	fade:SetDuration(DISPLAY_FADE)
-	searchFadeAnim:SetScript("OnFinished", ClearBufferAndDisplay)
+	SearchDisplay.Install(searchDisplay, frame, Navigation.ClearSearchBuffer)
 end
 
 function Navigation.ShowSearch()
@@ -383,12 +208,8 @@ function Navigation.ApplySettings()
 	keyboardSearchEnabled = installedCtx.plugin:GetSetting(1, "EnableKeyboardSearch")
 	if not keyboardSearchEnabled then
 		Navigation.HideSearch()
-		ClearBufferAndDisplay()
+		Navigation.ClearSearchBuffer()
 	elseif installedCtx.state.isMouseOver and not installedCtx.state.isEditModeActive then
 		Navigation.ShowSearch()
 	end
-end
-
-function Navigation.ClearSearchBuffer()
-	ClearBufferAndDisplay()
 end
