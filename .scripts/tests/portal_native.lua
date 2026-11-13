@@ -595,16 +595,13 @@ for _, name in ipairs({
     "SetHitRectInsets",
     "RegisterForDrag",
     "RegisterForClicks",
-    "EnableMouseWheel",
     "SetIgnoreParentAlpha",
     "SetTexture",
     "SetVertexColor",
     "SetBlendMode",
-    "AddMaskTexture",
     "SetAtlas",
     "SetTexCoord",
     "SetDesaturated",
-    "SetHideCountdownNumbers",
     "SetDrawSwipe",
     "SetSwipeColor",
     "SetDrawEdge",
@@ -615,7 +612,6 @@ for _, name in ipairs({
     "SetDuration",
     "SetOrder",
     "SetFromAlpha",
-    "SetToAlpha",
     "SetStartDelay",
     "SetToFinalAlpha",
     "SetOffset",
@@ -640,6 +636,27 @@ for _, name in ipairs({
 end
 function Frame:SetAtlas(value)
     self.atlas = value
+end
+function Frame:EnableMouseWheel(value)
+    self.mouseWheel = value
+end
+function Frame:IsMouseWheelEnabled()
+    return self.mouseWheel == true
+end
+function Frame:AddMaskTexture()
+    assert(self.kind == "Texture", "AddMaskTexture exists only on Texture, not " .. tostring(self.kind))
+end
+function Frame:SetHideCountdownNumbers(value)
+    self.hideCountdownNumbers = value
+end
+function Frame:GetHideCountdownNumbers()
+    return self.hideCountdownNumbers == true
+end
+function Frame:SetToAlpha(value)
+    self.toAlpha = value
+end
+function Frame:GetToAlpha()
+    return self.toAlpha
 end
 function Frame:SetJustifyH(value)
     self.justifyH = value
@@ -677,6 +694,9 @@ function CreateFrame(kind, name, parent, template)
     end
     if name == "OrbitPortalFrame" then
         frameCreations = frameCreations + 1
+    end
+    if template == "CooldownFrameTemplate" then
+        frame:CreateFontString()
     end
     if template == "ScrollFrameTemplate" then
         frame.ScrollBar = CreateFrame("Frame", nil, frame)
@@ -862,7 +882,8 @@ if scenario == "legacy" then
         end,
     }
     function Orbit:RegisterPlugin(name, system, options)
-        local plugin = { name = name, system = system, defaults = options.defaults }
+        local plugin =
+            { name = name, system = system, defaults = options.defaults, liveToggle = options.liveToggle or false }
         function plugin:GetSetting(_, key)
             local value = hostValues[key]
             if value ~= nil then
@@ -893,6 +914,9 @@ if scenario == "legacy" then
     end
     function Orbit:LiveTogglePlugin(_, enabled)
         hostEnabled = enabled
+        if not addon.Portal.liveToggle then
+            return
+        end
         if enabled then
             addon.Portal:OnEnable()
         else

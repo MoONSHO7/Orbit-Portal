@@ -4,6 +4,13 @@ local function Check(condition, message)
     assert(condition, message)
 end
 local originalStore = OrbitPortalDB
+local function FindSearchDisplay()
+    for _, candidate in ipairs(frames) do
+        if candidate.bufferText then
+            return candidate
+        end
+    end
+end
 addon.PortalScanner.GetOrderedList = function()
     return { { type = "spell", spellID = 123, name = "Fixture Portal", category = "CLASS", icon = 134400 } }
 end
@@ -24,6 +31,8 @@ if scenario == "loaderror" or scenario == "movementerror" then
     end
 end
 Emit("ADDON_LOADED", "Orbit_Portal")
+SlashCmdList.ORBITPORTAL("status")
+Check(messages[#messages]:find(addon.L.MSG_PORTAL_NOT_READY, 1, true), "status reports not ready before login")
 Emit("PLAYER_LOGIN")
 Check(settingsCategory ~= nil, "direct settings registration")
 if scenario == "loaderror" or scenario == "movementerror" then
@@ -69,6 +78,21 @@ FlushTimers()
 FlushTimers()
 Check(Plugin._portalActive and Plugin.frame and #ctx.state.visibleIcons == 1, "initial frame painted")
 Check(frameCreations == 1 and mapRequests == 1, "one constructor")
+Check(ctx.frame:IsMouseWheelEnabled(), "frame accepts wheel paging")
+Check(Plugin:GetSetting(1, "Anchor") == false, "a fresh frame reports no anchor to its host")
+do
+    local scan = addon.PortalScanner.GetOrderedList
+    addon.PortalScanner.GetOrderedList = function()
+        local list = scan()
+        list[2] =
+            { type = "spell", spellID = 124, name = "Resting", category = "CLASS", icon = 134400, cooldown = 1800 }
+        return list
+    end
+    ctx.Refresh()
+    Check(#ctx.state.portalList == 1 and ctx.state.portalList[1].spellID == 123, "long cooldowns are hidden by default")
+    addon.PortalScanner.GetOrderedList = scan
+    ctx.Refresh()
+end
 local firstIcon = ctx.state.visibleIcons[1]
 if scenario == "standalone" or scenario == "legacy" then
     local scan = addon.PortalScanner.GetOrderedList
@@ -80,11 +104,32 @@ if scenario == "standalone" or scenario == "legacy" then
     end
     ctx.Refresh()
     Check(#ctx.state.visibleIcons == 2, "refresh paints both portals")
+    local scale, pixel = ctx.frame:GetEffectiveScale(), addon.PortalServices.pixel
+    local iconSize = pixel:Snap(Plugin:GetSetting(1, "IconSize"), scale)
+    local segment = iconSize + pixel:Multiple(Plugin:GetSetting(1, "Spacing"), scale)
+    Check(ctx.frame:GetHeight() == 2 * segment + iconSize, "a short list sizes the frame to the three-slot minimum")
+    for _, icon in ipairs(ctx.state.visibleIcons) do
+        local _, relative, relativePoint, _, y = icon:GetPoint()
+        Check(
+            relative == ctx.content and relativePoint == "TOPLEFT" and y < 0,
+            "left-edge icons stack down from the top-left"
+        )
+    end
     ctx.HandleWheel(ctx.frame, -1)
     Check(
         ctx.state.visibleIcons[1] == firstIcon and firstIcon:GetAttribute("spell") == 456,
         "wheel repaints pooled icons"
     )
+    addon.PortalScanner.GetOrderedList = function()
+        local list = {}
+        for index = 1, 12 do
+            list[index] =
+                { type = "spell", spellID = 700 + index, name = "Portal " .. index, category = "CLASS", icon = 134400 }
+        end
+        return list
+    end
+    ctx.Refresh()
+    Check(#ctx.state.visibleIcons == 9, "a long list shows the default nine slots")
     addon.PortalScanner.GetOrderedList = function()
         return {
             { type = "spell", spellID = 810, name = "Sunken Vault", category = "CLASS", icon = 134400 },
@@ -95,6 +140,9 @@ if scenario == "standalone" or scenario == "legacy" then
         }
     end
     ctx.Refresh()
+    for _, icon in ipairs(ctx.state.visibleIcons) do
+        Check(not icon.DungeonShort:IsShown(), "short labels are disabled by default")
+    end
     ctx.state.scrollOffset = 2
     ctx.state.isMouseOver = true
     addon.PortalNavigation.ShowSearch()
@@ -108,20 +156,69 @@ if scenario == "standalone" or scenario == "legacy" then
     Check(search, "hover shows the search keyboard frame")
     search.scripts.OnKeyDown(search, "V")
     Check(not search.propagate, "search consumes a typing key")
+    Plugin:SetSetting(1, "FadeEffect", scenario == "legacy" and true or 20)
     search.scripts.OnChar(search, "V")
     local ranked = {}
     for index, item in ipairs(ctx.state.searchFilter) do
         ranked[index] = item.spellID
     end
     Check(table.concat(ranked, ",") == "812,811,813,814,810", "search ranks matches and preserves ties")
+    for index, alpha in ipairs({ 0.6, 0.8, 1, 0.8, 0.6 }) do
+        local icon = ctx.state.visibleIcons[index]
+        Check(
+            math.abs(icon:GetAlpha() - alpha) < 1e-9 and icon.appearFade:GetToAlpha() == icon:GetAlpha(),
+            "filtered icons fade from the centre and appear at that alpha"
+        )
+    end
+    Plugin:SetSetting(1, "FadeEffect", 0)
     search.scripts.OnKeyDown(search, "TAB")
     Check(not search.propagate and ctx.state.scrollOffset == 1, "tab pages the active filter")
     ctx.HandleWheel(ctx.frame, -1)
     Check(ctx.state.scrollOffset == 2, "wheel pages the active filter")
     search.scripts.OnChar(search, "!")
     Check(not ctx.state.searchFilter and ctx.state.scrollOffset == 2, "no match restores the unfiltered scroll")
+    local display = FindSearchDisplay()
+    now = now + 1
+    search.scripts.OnChar(search, "v")
+    search.scripts.OnChar(search, ".")
+    Check(not ctx.state.searchFilter and display.bufferText:GetText() == "V.", "typed punctuation matches literally")
+    now = now + 1
+    search.scripts.OnChar(search, "v")
+    now = now + 0.5
+    ctx.HandleWheel(ctx.frame, -1)
+    now = now + 0.5
+    search.scripts.OnChar(search, "a")
+    Check(display.bufferText:GetText() == "VA", "wheel paging keeps the typed query alive")
     ctx.HoverExit()
     Check(not search:IsShown() and search.propagate, "hover exit releases search and restores propagation")
+    ctx.state.isMouseOver = true
+    addon.PortalNavigation.ShowSearch()
+    now = now + 1
+    search.scripts.OnChar(search, "v")
+    Check(search:IsShown() and ctx.state.searchFilter and display.fade:IsPlaying(), "hover search active before combat")
+    SetCombat(true)
+    Check(
+        not search:IsShown() and not ctx.state.searchFilter and not ctx.state.isMouseOver,
+        "combat releases the hover search"
+    )
+    Check(display:GetAlpha() == 0 and not display.fade:IsPlaying(), "combat stops the query fade and hides it by alpha")
+    SetCombat(false)
+    FlushTimers()
+    FlushTimers()
+    ctx.state.scrollOffset = 0
+    addon.PortalScanner.GetOrderedList = function()
+        return {
+            { type = "spell", spellID = 901, name = "Rescanned", category = "CLASS", icon = 134400 },
+            { type = "spell", spellID = 902, name = "Discovered", category = "CLASS", icon = 134400 },
+        }
+    end
+    SlashCmdList.ORBITPORTAL("scan")
+    Check(
+        #ctx.state.visibleIcons == 2
+            and ctx.state.visibleIcons[2]:GetAttribute("spell") == 902
+            and messages[#messages]:find(addon.L.CMD_PORTAL_SCAN_DONE, 1, true),
+        "scan command repaints immediately"
+    )
     addon.PortalScanner.GetOrderedList = scan
     ctx.state.scrollOffset = 0
     ctx.Refresh()
@@ -133,6 +230,20 @@ Check(
     Plugin:GetSetting(1, "Favorites")["123"] == true and firstIcon:GetAttribute("type1") == "spell",
     "right-click down/up toggles once and preserves left action"
 )
+local content = ctx.content
+Plugin:SetSetting(1, "Animation", 1)
+Boot.Apply()
+local _, _, _, slideX, slideY = content:GetPoint()
+Check(
+    slideX == -ctx.frame:GetWidth() and slideY == 0 and content:GetAlpha() == 0,
+    "slide reveal rests beyond the left edge"
+)
+Plugin:SetSetting(1, "Animation", 2)
+Boot.Apply()
+Check(content.point == nil and content:GetAlpha() == 0, "fade reveal rests in place and transparent")
+Plugin:SetSetting(1, "Animation", 0)
+Boot.Apply()
+Check(content:GetAlpha() == 1, "reveal off keeps the icons visible")
 if scenario == "corrupt" then
     Check(OrbitPortalDB.profiles.default.settings.Position == "bad", "bad raw position retained")
     Check(
@@ -157,11 +268,25 @@ if scenario ~= "legacy" then
         { "MaxVisible", 4 },
         { "Spacing", 0 / 0 },
         { "Favorites", { bad = 1 } },
+        { "Position", { point = "LEFT", x = math.huge, y = 0 } },
+        { "Position", { point = "LEFT", x = -math.huge, y = 0 } },
         { "Enabled", 1 },
         { "DisabledComponents", { {} } },
     }) do
         Check(not pcall(Store.Set, Store, case[1], case[2]), "invalid write rejected: " .. case[1])
     end
+    Store:Set("MaxVisible", 21)
+    Check(Store:Get("MaxVisible") == 21, "slider maximum is a valid stored value")
+    Store:Set("MaxVisible", nil)
+    Check(not pcall(Store.Get, Store, "Unknown"), "unknown setting read rejected")
+    ctx.movement:Reset({ point = "RIGHT", x = -8, y = 0 })
+    local point, relative, relativePoint, x, y = Plugin.frame:GetPoint()
+    Check(
+        point == "RIGHT" and relative == UIParent and relativePoint == "RIGHT" and x == -8 and y == 0,
+        "placement keeps a non-default anchor point"
+    )
+    Boot.ResetPosition()
+    Check(Plugin.frame:GetPoint() == "LEFT", "reset restores the default anchor point")
 end
 local tabs = addon.PortalSchema.Tabs(Plugin, ctx)
 Check(tabs[1].id == "layout" and tabs[2].id == "appearance" and tabs[3].id == "behaviours", "canonical tab order")
@@ -169,6 +294,13 @@ for _, tab in ipairs(tabs) do
     Check(tab.scopeText == addon.L.CFG_SETTINGS_SCOPE_LAYOUT, "tab scope visible in standalone settings")
 end
 Check(tabs[2].controls[5].type == "dropdown" and #tabs[2].controls[5].options == 3, "animation uses named choices")
+local fadeSlider = tabs[3].controls[2]
+Check(
+    fadeSlider.key == "FadeEffect"
+        and fadeSlider.formatter(0) == addon.L.PLU_PORTAL_FADE_OFF
+        and fadeSlider.formatter(25) == addon.L.PLU_PORTAL_FADE_PCT_F:format(25),
+    "fade slider labels off and percentages"
+)
 Plugin:SetSetting(1, "DisabledComponents", { "Timer", "Unrelated" })
 tabs[2].controls[4].onReset()
 Check(
@@ -176,6 +308,7 @@ Check(
     "component reset preserves unowned components"
 )
 Plugin:SetSetting(1, "EnabledCategories", { CLASS = false, UNSUPPORTED = false })
+Check(not tabs[4].controls()[1].getValue(), "an opted-out category reads unchecked")
 tabs[4].controls()[1].onReset()
 Check(
     Plugin:GetSetting(1, "EnabledCategories").CLASS == nil
@@ -298,6 +431,19 @@ Check(
 local control = OrbitPortalSettings.spec.tabs[1].controls[1]
 addon.LibOrbitUI.Config.CommitValue(OrbitPortalSettings.spec, control, false)
 Check(not Plugin._portalActive, "dialog enablement disables product")
+do
+    local scan, scans = addon.PortalScanner.GetOrderedList, 0
+    addon.PortalScanner.GetOrderedList = function(...)
+        scans = scans + 1
+        return scan(...)
+    end
+    SlashCmdList.ORBITPORTAL("scan")
+    Check(
+        scans == 0 and messages[#messages]:find(addon.L.CMD_PORTAL_SCAN_DONE, 1, true),
+        "a disabled Portal acknowledges scan without scanning"
+    )
+    addon.PortalScanner.GetOrderedList = scan
+end
 addon.LibOrbitUI.Config.CommitValue(OrbitPortalSettings.spec, control, true)
 FlushTimers()
 local frameCount = #frames
@@ -357,6 +503,7 @@ if scenario == "legacy" then
         "hosted fonts resolve through Orbit media, with an unset theme font falling back to the standard font"
     )
     Check(fadeRegistrations == 22 and hostCallbacks ~= nil, "legacy fade and edit lifecycle restored on each enable")
+    Check(Plugin.frame.orbitCanvasIconGrid == true, "hosted frame advertises an icon grid to Orbit Canvas")
     local settingsDialog = { orbitCurrentTab = "Previous frame" }
     Plugin:AddSettings(settingsDialog, {})
     Check(hostSettings.controls[1].type == "tabs", "hosted settings retain their tab selector")
@@ -409,6 +556,11 @@ Check(
     firstIcon:GetAttribute("type1") == nil and firstIcon:GetAttribute("spell") == nil,
     "pending housing remains inert"
 )
+for _, case in ipairs({ { 2, false }, { 3, true } }) do
+    local data = { type = "spell", spellID = 456, category = "CLASS", cooldown = case[1], cooldownDuration = 20 }
+    addon.PortalIcon.Configure(ctx, firstIcon, data, 0, paint)
+    Check(firstIcon.cooldown:IsShown() == case[2], "cooldown sweep threshold at " .. case[1] .. "s")
+end
 local paintedColors = {}
 for _, key in ipairs({ "DungeonScore", "DungeonShort" }) do
     firstIcon[key].SetTextColor = function(_, r, g, b)
@@ -467,6 +619,46 @@ else
     local painted = paintedColors.DungeonScore
     Check(painted[1] == r and painted[2] == g and painted[3] == b, "standalone score keeps its tier colour")
 end
+local readScore = C_MythicPlus.GetSeasonBestAffixScoreInfoForMap
+for _, case in ipairs({ { 300, { 1, 0.5, 0 }, { Timer = true } }, { 299, { 0.64, 0.21, 0.93 }, {} } }) do
+    C_MythicPlus.GetSeasonBestAffixScoreInfoForMap = function()
+        return {}, case[1]
+    end
+    paintedColors.DungeonScore = nil
+    addon.PortalCanvas.ApplyIconComponents(
+        firstIcon,
+        { category = "SEASONAL_DUNGEON", challengeModeID = 502 },
+        {},
+        true,
+        {
+            fontPath = STANDARD_TEXT_FONT,
+            disabled = case[3],
+            positions = {
+                FavouriteStar = {
+                    anchorX = "RIGHT",
+                    anchorY = "TOP",
+                    offsetX = 1,
+                    offsetY = 1,
+                    overrides = { Scale = 0 },
+                },
+            },
+        }
+    )
+    local painted, color = paintedColors.DungeonScore, case[2]
+    Check(
+        painted and painted[1] == color[1] and painted[2] == color[2] and painted[3] == color[3],
+        "score tier colour at " .. case[1]
+    )
+    Check(
+        firstIcon.cooldown:GetHideCountdownNumbers() == (case[3].Timer == true),
+        "timer component toggles countdown numbers"
+    )
+end
+C_MythicPlus.GetSeasonBestAffixScoreInfoForMap = readScore
+Check(
+    firstIcon.FavouriteStar:GetWidth() == addon.PortalServices.pixel:Snap(firstIcon.favouriteStarBaseSize, pixelScale),
+    "a non-positive star scale keeps the base size"
+)
 SetCombat(true)
 Check(not OrbitPortalSettings:IsShown() and not settingsInput:IsShown(), "combat releases settings keyboard input")
 Check(not Plugin.frame.shown, "native combat driver hides root")

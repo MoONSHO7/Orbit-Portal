@@ -116,17 +116,46 @@ for scenario in scanner_scenarios:
 if args.scanner_only:
     raise SystemExit(0)
 
+LOCALES = ("enUS", "deDE", "frFR", "esES", "ptBR", "ruRU", "koKR", "zhCN", "zhTW")
+LOCALE_ALIASES = {"enGB": "enUS", "esMX": "esES"}
+FONT_FACES = {"koKR": "KR", "zhCN": "SC", "zhTW": "TC"}
+FONT_DIRECTORY = "Interface\\AddOns\\Orbit_Portal\\Assets\\Fonts\\"
+localization = [path for path in loaded if path.parent.name == "Localization"]
+fonts = next(path for path in loaded if path.name == "PortalFonts.lua")
 keys = set()
 for path in (ROOT / "Core").rglob("*.lua"):
     keys.update(re.findall(r"\bL\.([A-Z][A-Z0-9_]*)", path.read_text(encoding="utf-8")))
-for locale in ("enUS", "deDE", "frFR", "esES", "ptBR", "ruRU", "koKR", "zhCN", "zhTW"):
+strings, written = {}, {}
+for locale in (*LOCALES, *LOCALE_ALIASES):
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(FIXTURE.read_text(encoding="utf-8"), "locale")
-    lua.execute("local locale = ...; GetLocale = function() return locale end", locale)
-    loader = lua.eval("function(source) assert(loadstring(source))('Orbit_Portal', addon) end")
-    for path in loaded:
-        if path.parent.name == "Localization":
-            loader(path.read_text(encoding="utf-8"))
+    lua.execute('local locale = ...; GetLocale = function() return locale end; _G["LOCALE_" .. locale] = true', locale)
+    # Files after Generated.lua load into an empty table so each file's own strings can be compared per locale.
+    load_strings = lua.eval('''function(source, name)
+        local merged = addon.L
+        if merged then addon.L = {} end
+        assert(loadstring(source, name))("Orbit_Portal", addon)
+        local own = addon.L
+        if merged then
+            for key, value in pairs(own) do merged[key] = value end
+            addon.L = merged
+        end
+        return own
+    end''')
+    written[locale] = {path.name: dict(load_strings(path.read_text(encoding="utf-8"), path.name).items())
+                       for path in localization}
     for key in keys:
         assert isinstance(lua.globals().addon.L[key], str), (locale, key)
-print(f"PASS: Lua 5.1 compilation and {len(keys)} referenced localization keys across nine locales")
+    strings[locale] = dict(lua.globals().addon.L.items())
+    lua.eval("function(source) assert(loadstring(source))('Orbit_Portal', addon) end")(fonts.read_text(encoding="utf-8"))
+    face, paths = FONT_FACES.get(locale, ""), lua.globals().addon.PortalFonts.Path
+    faces = {"UI": f"OrbitSansCondensedUI{face}-ExtraBold.ttf", "Chat": f"OrbitSansCondensedChat{face}-Bold.ttf"}
+    for kind, name in faces.items():
+        assert paths[kind] == FONT_DIRECTORY + name and (ROOT / "Assets/Fonts" / name).is_file(), (locale, kind)
+for alias, target in LOCALE_ALIASES.items():
+    assert strings[alias] == strings[target], f"{alias} must show {target} strings"
+for name in written["enUS"]:
+    distinct = {tuple(sorted(written[locale][name].items())) for locale in LOCALES}
+    assert len(distinct) == len(LOCALES), f"{name}: a locale resolves to another locale's strings"
+print(f"PASS: Lua 5.1 compilation, {len(keys)} referenced localization keys and locale fonts across nine locales"
+      f" plus {'/'.join(LOCALE_ALIASES)}")

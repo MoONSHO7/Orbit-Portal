@@ -17,12 +17,14 @@ for another client.
 double, and runs `tests/portal_cases.lua` once per scenario: standalone, disabled, combat-blocked, future and corrupt
 stores, the legacy Orbit host, an unmarked host, injected constructor and movement failures, and `noatlas`, where the
 settings shell's `housing-basic-container` lookup fails and the shared backdrop colour must take over.
-Settings cases cover Escape propagation, proxy depth, close/reopen cleanup and combat suspension.
+Settings cases cover Escape propagation, proxy depth, close/reopen cleanup, combat suspension and store validation;
+paint cases cover layout size, fade, reveal rest states, search ranking and release, and the Canvas text components.
 Cooldown cases exercise the live ticker after repeated toggles, including restricted values and combat admission.
-`tests/portal_scanner_cases.lua` then covers identity, ownership and native toy usability per class/race fixture, and a
-final pass proves every `L.` key Core references exists in all nine locales. Pass `--scanner-only` to isolate the
-scanner cases. The reusable `.github/workflows/validate.yml` runs the package check and this suite as separate jobs
-after fetching the pinned library.
+`tests/portal_scanner_cases.lua` then covers identity, faction, seasonal placement, ownership and native toy usability
+per class/race fixture. A final pass proves every `L.` key Core references exists in all nine locales, that enGB and
+esMX show their parent locale, that no locale resolves to another's strings, and each locale's font paths. Pass
+`--scanner-only` to isolate the scanner cases. The reusable `.github/workflows/validate.yml` runs the package check
+and this suite as separate jobs after fetching the pinned library.
 
 `fetch-libs.py` reads the URL, full commit SHA and runtime subdirectory directly from `.pkgmeta`, fetches that commit
 using Git credentials, and materializes ordinary files with `git archive`. Run `python .scripts/fetch-libs.py` from a
@@ -34,9 +36,10 @@ Development symlinks and junctions are always preserved.
   `/reload` verification remains separate.
 - Scanner fixtures deliberately use the composed scanner and real Portal data. Keep native eligibility doubles
   fail-closed so a new candidate cannot pass merely because a mock omitted its restriction; the atlas double likewise
-  resolves only the one atlas the library asks for.
+  resolves only the one atlas the library asks for, and only Textures accept `AddMaskTexture`.
 - The legacy host double must track the Orbit APIs the bridge calls (`Orbit.Media:FetchFont`, `Orbit:GetTheme`,
   `Engine.*`); a bridge change that reaches a new Orbit owner fails the `legacy` scenario until the double learns it.
+  Like Orbit, its `LiveTogglePlugin` drives the lifecycle only for a `liveToggle` registration.
 - Orbit-Libs is public. CI retains `ORBIT_PAT` through `gh auth setup-git`; local fetches use the configured Git
   credential helper. The existing credential policy skips validation for fork/Dependabot pull requests; trusted
   validation remains required before publication.

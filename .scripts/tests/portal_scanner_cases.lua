@@ -234,10 +234,73 @@ local function CheckDisplayList()
     Check(favorite.searchCategory == PD.CategoryNames.CLASS:lower(), "favorites keep original category search text")
 end
 
+local function CheckSpellSources()
+    local fixtureRaid = { spellID = 990001, name = "Fixture Raid", short = "FR" }
+    local readCooldown = C_Spell.GetSpellCooldown
+    for _, spellID in ipairs({ 1286812, 393256, 445269, 445418, 464256, 1239155, 990001, 3561, 3567 }) do
+        state.knownSpells[spellID] = true
+    end
+    PD.MIDNIGHT_RAID[1] = fixtureRaid
+    PD.CURRENT_SEASON_RAIDS[1] = 1239155
+    C_Spell.GetSpellCooldown = function(spellID)
+        if spellID == 445269 then
+            return { startTime = 0, duration = 30 }
+        end
+        return readCooldown(spellID)
+    end
+    local found = Scanner:ScanAll()
+    C_Spell.GetSpellCooldown = readCooldown
+    PD.MIDNIGHT_RAID[1], PD.CURRENT_SEASON_RAIDS[1] = nil, nil
+    wipe(state.knownSpells)
+
+    Check(
+        FindBySpellID(found.SEASONAL_DUNGEON, 1286812) and FindBySpellID(found.SEASONAL_DUNGEON, 393256),
+        "current-season dungeons join the seasonal category"
+    )
+    Check(
+        not FindBySpellID(found.MIDNIGHT_DUNGEON, 1286812) and not FindBySpellID(found.DF_DUNGEON, 393256),
+        "seasonal dungeons leave their expansion category"
+    )
+    local stonevault = FindBySpellID(found.TWW_DUNGEON, 445269)
+    Check(stonevault and not FindBySpellID(found.SEASONAL_DUNGEON, 445269), "off-season dungeon stays in its expansion")
+    Check(stonevault.cooldown == 0 and stonevault.cooldownDuration == 0, "a zero start time reads as ready")
+    Check(
+        FindBySpellID(found.TWW_DUNGEON, 445418) and not FindBySpellID(found.TWW_DUNGEON, 464256),
+        "faction dungeon portals follow the player's faction"
+    )
+    Check(
+        FindBySpellID(found.SEASONAL_RAID, 1239155) and not FindBySpellID(found.RAID, 1239155),
+        "a seasonal raid is listed once, in the seasonal category"
+    )
+    local raid = FindBySpellID(found.RAID, 990001)
+    Check(raid and raid.category == "RAID" and raid.short == "FR", "Midnight raids join the raid category")
+    Check(
+        FindBySpellID(found.MAGE_TELEPORT, 3561) and not FindBySpellID(found.MAGE_TELEPORT, 3567),
+        "mage teleports follow the player's faction"
+    )
+end
+
+local function CheckToyOwnership()
+    local hearthstoneToy = 54452
+    state.usableToys[hearthstoneToy] = true
+    Check(
+        not HearthstonePoolContains(Scanner:ScanAll().HEARTHSTONE, hearthstoneToy),
+        "an unowned toy is excluded even when the toy box reports it usable"
+    )
+    state.ownedToys[hearthstoneToy] = true
+    Check(
+        HearthstonePoolContains(Scanner:ScanAll().HEARTHSTONE, hearthstoneToy),
+        "an owned usable toy joins the hearthstone pool"
+    )
+    state.usableToys[hearthstoneToy], state.ownedToys[hearthstoneToy] = nil, nil
+end
+
 if scenario == "scanner_human_mage" then
     CheckDataContracts()
     CheckHousingSource()
     CheckDisplayList()
+    CheckSpellSources()
+    CheckToyOwnership()
 end
 if scenario == "scanner_engineer" then
     CheckEngineeringRequirements()
