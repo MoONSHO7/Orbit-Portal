@@ -52,3 +52,4 @@ Development symlinks and junctions are always preserved.
 ## References
 `../README.md`, `../.github/workflows/README.md`, `../Orbit_Portal.toc` and
 `../Libs/LibOrbitUI-1.0/Config/Dialogs/README.md` (the chrome contract the `noatlas` scenario asserts).
+`lua-globals/README.md`: the Lua-globals gate (`check-lua-globals.py`, copied from Orbit) the lint-only pre-push runs.
