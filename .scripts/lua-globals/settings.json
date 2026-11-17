@@ -1,0 +1,23 @@
+{
+  "roots": [
+    "Core",
+    "Localization"
+  ],
+  "exclude": {},
+  "ownedPrefixes": [
+    "Orbit",
+    "SLASH_ORBIT"
+  ],
+  "readGlobals": {
+    "optional Orbit host": [
+      "Orbit"
+    ],
+    "client functions wow-ui-source neither calls nor documents": [
+      "C_ToyBox.IsToyUsable",
+      "PlaySoundFile"
+    ]
+  },
+  "writableGlobals": {},
+  "missingOnRetail": [],
+  "missingOnForever": []
+}
