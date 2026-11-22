@@ -5,10 +5,10 @@ manual-changelog:
   markup-type: markdown
 
 externals:
-  # LibOrbitUI release 1.15 provides API 1.18; pin its verified release commit.
+  # LibOrbitUI release 1.17 provides API 1.18; pin its verified release commit.
   Libs/LibOrbitUI-1.0:
     url: https://github.com/MoONSHO7/Orbit-Libs
-    commit: 0bd8378c47203771139d701a989d1d3bb3d19d63
+    commit: 88f6eade91f0a3bfaf0c6ab8ad23b354651453e1
     path: LibOrbitUI/LibOrbitUI-1.0
 
 ignore:

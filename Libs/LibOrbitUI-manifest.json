@@ -12,7 +12,7 @@
     "Libs/LibOrbitUI-1.0/Config/ConfigPickerWidgets.lua": "791921db0a4784a6c1bac652c055133f80f40dbf3013bc6f638c6f7bcf5f91d6",
     "Libs/LibOrbitUI-1.0/Config/ConfigSchema.lua": "e5f3d1ce94ed354d8af6802be2aed9ec78a2c518e27f8b501cd9f0ee9db81859",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigConfirmPopup.lua": "4ad7fde78ae27af16c1f4c267b97bb29c80a6045b24eb380aea228c288af3e51",
-    "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigDialog.lua": "0ad00a1ed5cb9f14d5b0ec2c32d4e0662b199dc08da823c5df2e9f1e5c2232d0",
+    "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigDialog.lua": "42d7540f2e3ccd2c54f8ef36c8eb886c8e3f3f7980bfc652cef0947d95726085",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigInputPopup.lua": "301a68c9d4d369879f4f239f4c2a4efc1768eddf19a6528fd8fafdc7da5c1194",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigPanel.lua": "4d94929a317edbf8e0716b4980885c78070ecb2854e62633a7e615ef2ca9f11f",
     "Libs/LibOrbitUI-1.0/Config/Dialogs/ConfigWindow.lua": "cb7de0960c521682aa499745f2012a9bbb5efb1aa48c8608cbb3f9d8cecb00e6",
@@ -67,5 +67,5 @@
     "Libs/LibOrbitUI-1.0/Rendering/TooltipClick.lua": "e9b0eada19d53293a2851735ea302e824316d96e2dd0085202bf87c87938299c",
     "Localization/Generated.lua": "fd8b6bd0158a2b2898db940163edcddff63bf76a6c7ae4207527f84b962f8790"
   },
-  "contentRevision": "3102bc70250460e42168b7382ccf59eba56979f6be8821fa1223b21ca8601fc6"
+  "contentRevision": "15bb7fd7f4acd112871403cf16eecef4cc8c5dc9c9d68242ad9eae5f827f7185"
 }
